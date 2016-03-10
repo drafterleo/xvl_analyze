@@ -159,11 +159,11 @@ def hex2color(s: str):
         raise ValueError('invalid hex color string "%s"' % s)
     return tuple([int(n, 16) / 255.0 for n in (s[1:3], s[3:5], s[5:7])])
 
-def make_cluster_map(colors, num_clusters=100):
+def make_cluster_map(colors, n_clusters=100):
     color_vectors = np.array([hex2color(c) for c in colors])
 
     # initialize a k-means object and use it to extract centroids
-    kmeans_model = KMeans(n_clusters=num_clusters)
+    kmeans_model = KMeans(n_clusters=n_clusters)
     idx = kmeans_model.fit_predict(color_vectors)
     print("k-means clustering done")
 
@@ -192,7 +192,7 @@ def make_palette_matrix(palette):
 
 def nearest_color_vec(color, palette, palette_matrix):
     color_vector = norm_color_vector(color)
-    nearest_palette_idx = np.argmax(np.dot(color_vector, palette_matrix.T))
+    nearest_palette_idx = np.argmax(np.dot(palette_matrix, color_vector.T))
     return palette[nearest_palette_idx] if np.sum(color_vector) > 0 else '#000000'
 
 
@@ -204,25 +204,28 @@ def nearest_color_rgb(color, palette, palette_rgb):
 
 def make_palette_map(colors, palette):
     colors = list(xvl.xvl_data_color_set(xvl_data))
-    palette_rgb = np.array([hex2color(c) for c in palette])
-    # palette_matrix = make_palette_matrix(palette)
+    # palette_rgb = np.array([hex2color(c) for c in palette])
+    palette_matrix = make_palette_matrix(palette)
     color_map = {}
     for color in colors:
-        color_map[color] = nearest_color_rgb(color, palette, palette_rgb)
-        # color_map[color] = nearest_color_vec(color, palette, palette_matrix)
+        #color_map[color] = nearest_color_rgb(color, palette, palette_rgb)
+        color_map[color] = nearest_color_vec(color, palette, palette_matrix)
     return color_map
 
 
 if __name__ ==  "__main__":
     xvl_data = xvl.parse_xvl_file("animate_inanimate_colors.xvl")
     color_list = list(xvl.xvl_data_color_set(xvl_data))
-    cluster_map, cluster_palette = make_cluster_map(color_list)
+
+    cluster_map, cluster_palette = make_cluster_map(color_list, n_clusters=len(color_list)//9)
     print(cluster_map)
 
     palette = list(color_names.values())
-    palette_map = make_palette_map(color_list, cluster_palette)
+    palette_map = make_palette_map(color_list, palette)
     print(palette_map)
 
     map_diff = [(c, cluster_map[c], palette_map[c])
                 for c in color_list if cluster_map[c] != palette_map[c]]
     print(len(map_diff), map_diff)
+
+    # http://www.color-hex.com/
