@@ -21,6 +21,20 @@ def parse_xvl_file(file_name) -> list:
                     data.append((label, colors))
     return data # [(label, [colors]), ...]
 
+def remap_xvl_file(src_file, dst_file, color_map):
+    tree = ET.ElementTree(file=src_file)
+    root = tree.getroot()
+    if root.tag == 'xravlaste':
+        for item in root:
+            if item.tag == 'item':
+                pixra_item = item[2]
+                if pixra_item.attrib['type'] == 'CColorMatrixPixra':
+                    matrix_item = pixra_item[0]
+                    for color_item in matrix_item:
+                       color = color_item.attrib['rgb']
+                       color_item.attrib['rgb'] = color_map.get(color, color)
+    tree.write(file_or_filename=dst_file)
+
 
 def show_colors(colors: list):
     fig = plt.figure()
@@ -49,12 +63,14 @@ def xvl_data_color_set(data):
             colors.add(color)
     return colors
 
-
-if __name__ ==  "__main__":
-    #show_colors(colors=['#D2B48C', '#FF6347', '#40E0D0', '#EE82EE', '#F5DEB3'])
+def test_xvl_parser():
     xvl_data = parse_xvl_file("animate_inanimate_colors.xvl")
     print(len(xvl_data), xvl_data)
     print(xvl_data_labels(xvl_data))
     color_set = xvl_data_color_set(xvl_data)
     print(len(color_set))
     show_colors(xvl_data[0][1])
+
+
+if __name__ ==  "__main__":
+    test_xvl_parser()
