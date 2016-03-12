@@ -2,7 +2,7 @@ import xml.etree.cElementTree as ET
 import matplotlib.pyplot as plt
 
 # http://eli.thegreenplace.net/2012/03/15/processing-xml-in-python-with-elementtree
-def parse_xvl_file(file_name) -> list:
+def parse_xvl_color_matrix_file(file_name) -> list:
     data = []
     tree = ET.ElementTree(file=file_name)
     root = tree.getroot()
@@ -21,7 +21,8 @@ def parse_xvl_file(file_name) -> list:
                     data.append((label, colors))
     return data # [(label, [colors]), ...]
 
-def remap_xvl_file(src_file, dst_file, color_map):
+
+def remap_xvl_color_matrix_file(src_file, dst_file, color_map):
     tree = ET.ElementTree(file=src_file)
     root = tree.getroot()
     if root.tag == 'xravlaste':
@@ -64,7 +65,7 @@ def xvl_data_color_set(data):
     return colors
 
 def test_xvl_parser():
-    xvl_data = parse_xvl_file("animate_inanimate_colors.xvl")
+    xvl_data = parse_xvl_color_matrix_file("animate_inanimate_colors.xvl")
     print(len(xvl_data), xvl_data)
     print(xvl_data_labels(xvl_data))
     color_set = xvl_data_color_set(xvl_data)

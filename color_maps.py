@@ -64,7 +64,6 @@ def nearest_color_rgb(color, palette, palette_rgb):
 
 
 def make_palette_map(colors, palette, compare_alg=caRgbDistance):
-    colors = list(xvl.xvl_data_color_set(xvl_data))
     color_map = {}
     if compare_alg == caRgbDistance:
         palette_rgb = np.array([hex2color(c) for c in palette])
@@ -78,10 +77,11 @@ def make_palette_map(colors, palette, compare_alg=caRgbDistance):
 
 
 if __name__ ==  "__main__":
-    xvl_data = xvl.parse_xvl_file("animate_inanimate_colors.xvl")
+    xvl_data = xvl.parse_xvl_color_matrix_file("ai_src.xvl")
     color_list = list(xvl.xvl_data_color_set(xvl_data))
+    print(len(color_list))
 
-    cluster_map, cluster_palette = make_cluster_map(color_list, n_clusters=len(color_list)//9)
+    cluster_map, cluster_palette = make_cluster_map(color_list, n_clusters=150)
     print(cluster_map)
 
     palette = list(color_names.values())
@@ -92,6 +92,6 @@ if __name__ ==  "__main__":
                 for c in color_list if cluster_map[c] != palette_map[c]]
     print(len(map_diff), map_diff)
 
-    xvl.remap_xvl_file("animate_inanimate_colors.xvl", "ai_tst.xvl", palette_map)
+    xvl.remap_xvl_color_matrix_file("ai_src.xvl", "ai_tst.xvl", palette_map)
 
     # http://www.color-hex.com/
