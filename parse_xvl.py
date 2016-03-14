@@ -50,11 +50,20 @@ def show_colors(colors: list):
         y += h
     plt.show()
 
-def xvl_data_labels(data):
+
+def xvl_data_label_set(data):
     labels = set()
     for item in data:
         labels.add(item[0])
     return labels
+
+
+def labels_of_xvl_data(xvl_data):
+    return [item[0] for item in xvl_data]
+
+
+def vectors_of_xvl_data(xvl_data):
+    return [item[1] for item in xvl_data]
 
 
 def xvl_data_color_set(data):
@@ -64,10 +73,11 @@ def xvl_data_color_set(data):
             colors.add(color)
     return colors
 
+
 def test_xvl_parser():
     xvl_data = parse_xvl_color_matrix_file("animate_inanimate_colors.xvl")
     print(len(xvl_data), xvl_data)
-    print(xvl_data_labels(xvl_data))
+    print(xvl_data_label_set(xvl_data))
     color_set = xvl_data_color_set(xvl_data)
     print(len(color_set))
     show_colors(xvl_data[0][1])

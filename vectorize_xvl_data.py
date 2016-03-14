@@ -8,17 +8,18 @@ def vectorize_xvl_color_matrix_data(xvl_data, palette_size=150):
     color_map = cmap.make_palette_map(color_list, palette)
 
     idx_palette_map = dict(enumerate(palette))
-    palette_idx_map = dict([(color, index)
-                            for index, color in idx_palette_map.items()])
+    idx_label_map = dict(enumerate(list(set(xvl.labels_of_xvl_data(xvl_data)))))
+
+    palette_idx_map = dict([(color, index) for index, color in idx_palette_map.items()])
+    label_idx_map = dict([(label, index) for index, label in idx_label_map.items()])
 
     color_idx_map = dict([(color, palette_idx_map[color_map[color]])
                          for color in color_map.keys()])
 
-    xvl_vec_data = [(label, [color_idx_map[color] for color in vector])
+    xvl_vec_data = [(label_idx_map[label], [color_idx_map[color] for color in vector])
                     for label, vector in xvl_data]
 
-
-    return xvl_vec_data, idx_palette_map
+    return xvl_vec_data, idx_palette_map, idx_label_map
 
 
 def test():
