@@ -28,15 +28,15 @@ def make_xvl_color_matrix_vec_data(xvl_data):
     # xvl_vec_data_gnz, _, _ = vectorize_xvl_color_matrix_data(xvl_data, palette_size=10) # generalized colors
     # vectors_gnz = xvl.vectors_of_xvl_data(xvl_vec_data_gnz)
 
-    vectors_gnz = []
-    color_count = len(idx_palette_map)
-    for vector in vectors:
-        color_vec = [0] * color_count
-        for i in vector:
-            color_vec[i] = 1
-        vectors_gnz.append(color_vec)
-
-    vectors = [vectors[i] + vectors_gnz[i] for i in range(len(vectors))]
+    # vectors_gnz = []
+    # color_count = len(idx_palette_map)
+    # for vector in vectors:
+    #     color_vec = [0] * color_count
+    #     for i in vector:
+    #         color_vec[i] = 1
+    #     vectors_gnz.append(color_vec)
+    #
+    # vectors = [vectors[i] + vectors_gnz[i] for i in range(len(vectors))]
 
     labels = xvl.labels_of_xvl_data(xvl_vec_data)
 
