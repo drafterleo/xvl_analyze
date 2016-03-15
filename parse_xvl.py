@@ -1,5 +1,6 @@
 import xml.etree.cElementTree as ET
 import matplotlib.pyplot as plt
+import json
 
 # http://eli.thegreenplace.net/2012/03/15/processing-xml-in-python-with-elementtree
 def parse_xvl_color_matrix_file(file_name) -> list:
@@ -81,6 +82,17 @@ def test_xvl_parser():
     color_set = xvl_data_color_set(xvl_data)
     print(len(color_set))
     show_colors(xvl_data[0][1])
+
+
+def save_to_json(xvl_data, file_name):
+    with open(file_name, 'w', encoding='utf-8') as wf:
+        json.dump(xvl_data, wf, separators=(',', ':'))
+
+
+def load_from_json(file_name):
+    with open(file_name, encoding='utf-8') as of:
+        data = json.load(of)
+    return data
 
 
 if __name__ ==  "__main__":

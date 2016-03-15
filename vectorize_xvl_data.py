@@ -21,10 +21,34 @@ def vectorize_xvl_color_matrix_data(xvl_data, palette_size=150):
 
     return xvl_vec_data, idx_palette_map, idx_label_map
 
+def make_xvl_color_matrix_vec_data(xvl_data):
+    xvl_vec_data, idx_palette_map, idx_label_map = vectorize_xvl_color_matrix_data(xvl_data, palette_size=150)
+    vectors = xvl.vectors_of_xvl_data(xvl_vec_data)
+
+    # xvl_vec_data_gnz, _, _ = vectorize_xvl_color_matrix_data(xvl_data, palette_size=10) # generalized colors
+    # vectors_gnz = xvl.vectors_of_xvl_data(xvl_vec_data_gnz)
+
+    vectors_gnz = []
+    color_count = len(idx_palette_map)
+    for vector in vectors:
+        color_vec = [0] * color_count
+        for i in vector:
+            color_vec[i] = 1
+        vectors_gnz.append(color_vec)
+
+    vectors = [vectors[i] + vectors_gnz[i] for i in range(len(vectors))]
+
+    labels = xvl.labels_of_xvl_data(xvl_vec_data)
+
+    return {'labels-map': idx_label_map,
+            'palette-map': idx_palette_map,
+            'vectors': vectors,
+            'labels': labels}
+
 
 def test():
     xvl_data = xvl.parse_xvl_color_matrix_file("ai_src.xvl")
-    xvl_vec_data, idx_palette_map = vectorize_xvl_color_matrix_data(xvl_data, palette_size=150)
+    xvl_vec_data, idx_palette_map, idx_labels_map = vectorize_xvl_color_matrix_data(xvl_data, palette_size=150)
     print(idx_palette_map)
     print(xvl_vec_data)
     print(len(xvl_vec_data))
