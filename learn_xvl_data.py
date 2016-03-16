@@ -5,6 +5,7 @@ from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from sklearn import decomposition
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -22,7 +23,7 @@ def learn_predict(xvl_vec_data):
     print(xvl_vec_data['labels-map'])
     # print(vectors[0])
 
-    tst_count = 10
+    tst_count = 20
 
     X = vectors[:-tst_count]
     Y = labels[:-tst_count]
@@ -31,18 +32,22 @@ def learn_predict(xvl_vec_data):
     Y_tst = labels[-tst_count:]
 
     # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear')
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
+    classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd')
     # classifier = GaussianNB()
-    classifier = DecisionTreeClassifier()
+    # classifier = DecisionTreeClassifier()
+    # classifier = RandomForestClassifier(n_estimators=100,
+    #                                     warm_start=True, oob_score=True,
+    #                                     max_features=None,
+    #                                     random_state=123)
     classifier.fit(X, Y)
 
     print(list(classifier.predict(X_tst)))
     print(Y_tst)
     print(classifier.fit(X, Y).score(X_tst, Y_tst))
 
-    # show_pca_transform(X, Y)
-    show_2D_projections(X, Y)
+    show_pca_transform(X, Y)
+    # show_2D_projections(X, Y)
 
 
 def show_2D_projections(X, Y):
@@ -83,4 +88,5 @@ if __name__ ==  "__main__":
     # xvl_vec_data = make_and_save_xvl_vec_data("ai_src.xvl", "ai_src_vec.json")
 
     xvl_vec_data = xvl.load_from_json("ai_src_vec.json")
+
     learn_predict(xvl_vec_data)
