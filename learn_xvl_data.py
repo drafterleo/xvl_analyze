@@ -19,11 +19,14 @@ from vectorize_xvl_data import make_xvl_color_matrix_vec_data
 def learn_predict(xvl_vec_data):
     vectors = xvl_vec_data['vectors']
     labels = xvl_vec_data['labels']
+    palette_map = xvl_vec_data['palette_map']
 
-    print(xvl_vec_data['labels-map'])
-    # print(vectors[0])
+    # vectors = [[int(palette_map[str(idx)][1:], 16) for idx in v[:9]] + v[9:] for v in vectors]
 
-    tst_count = 20
+    print(xvl_vec_data['labels_map'])
+    print(vectors[0])
+
+    tst_count = 10
 
     X = vectors[:-tst_count]
     Y = labels[:-tst_count]
@@ -32,21 +35,21 @@ def learn_predict(xvl_vec_data):
     Y_tst = labels[-tst_count:]
 
     # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear')
-    classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
-    # classifier = LinearDiscriminantAnalysis(solver='svd')
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
+    classifier = LinearDiscriminantAnalysis(solver='svd')
     # classifier = GaussianNB()
     # classifier = DecisionTreeClassifier()
-    # classifier = RandomForestClassifier(n_estimators=100,
+    # classifier = RandomForestClassifier(n_estimators=350,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
-    #                                     random_state=123)
+    #                                     random_state=None)
     classifier.fit(X, Y)
 
     print(list(classifier.predict(X_tst)))
     print(Y_tst)
     print(classifier.fit(X, Y).score(X_tst, Y_tst))
 
-    show_pca_transform(X, Y)
+    # show_pca_transform(X, Y)
     # show_2D_projections(X, Y)
 
 
@@ -85,8 +88,8 @@ def make_and_save_xvl_vec_data(xvl_file, json_file):
 
 
 if __name__ ==  "__main__":
-    # xvl_vec_data = make_and_save_xvl_vec_data("ai_src.xvl", "ai_src_vec.json")
+    # xvl_vec_data = make_and_save_xvl_vec_data("rgb_src.xvl", "rgb_src_vec.json")
 
-    xvl_vec_data = xvl.load_from_json("ai_src_vec.json")
+    xvl_vec_data = xvl.load_from_json("rgb_src_vec.json")
 
     learn_predict(xvl_vec_data)
