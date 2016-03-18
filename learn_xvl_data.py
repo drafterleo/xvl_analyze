@@ -26,7 +26,7 @@ def learn_predict(xvl_vec_data):
     print(xvl_vec_data['labels_map'])
     print(vectors[0])
 
-    tst_count = 10
+    tst_count = 20
 
     X = vectors[:-tst_count]
     Y = labels[:-tst_count]
@@ -36,13 +36,13 @@ def learn_predict(xvl_vec_data):
 
     # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear')
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
-    classifier = LinearDiscriminantAnalysis(solver='svd')
+    # classifier = LinearDiscriminantAnalysis(solver='svd')
     # classifier = GaussianNB()
     # classifier = DecisionTreeClassifier()
-    # classifier = RandomForestClassifier(n_estimators=350,
-    #                                     warm_start=True, oob_score=True,
-    #                                     max_features=None,
-    #                                     random_state=None)
+    classifier = RandomForestClassifier(n_estimators=350,
+                                        warm_start=True, oob_score=True,
+                                        max_features=None,
+                                        random_state=None)
     classifier.fit(X, Y)
 
     print(list(classifier.predict(X_tst)))
