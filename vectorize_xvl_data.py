@@ -1,10 +1,15 @@
 import parse_xvl as xvl
 import color_maps as cmap
 
-def vectorize_xvl_color_matrix_data(xvl_data, palette_size=150):
+def vectorize_xvl_color_matrix_data(xvl_data, palette_size=150, base_palette=[]):
     # form palette and color map
     color_list = list(xvl.xvl_data_color_set(xvl_data))
-    _, palette = cmap.make_cluster_map(color_list, n_clusters=palette_size)
+
+    if len(base_palette) == 0:
+        _, palette = cmap.make_cluster_map(color_list, n_clusters=palette_size)
+    else:
+        palette = base_palette
+
     color_map = cmap.make_palette_map(color_list, palette)
 
     idx_palette_map = dict(enumerate(palette))
@@ -14,7 +19,7 @@ def vectorize_xvl_color_matrix_data(xvl_data, palette_size=150):
     label_idx_map = dict([(label, index) for index, label in idx_label_map.items()])
 
     color_idx_map = dict([(color, palette_idx_map[color_map[color]])
-                         for color in color_map.keys()])
+                          for color in color_map.keys()])
 
     xvl_vec_data = [(label_idx_map[label], [color_idx_map[color] for color in vector])
                     for label, vector in xvl_data]
@@ -25,17 +30,22 @@ def make_xvl_color_matrix_vec_data(xvl_data):
     xvl_vec_data, idx_palette_map, idx_label_map = vectorize_xvl_color_matrix_data(xvl_data, palette_size=150)
     vectors = xvl.vectors_of_xvl_data(xvl_vec_data)
 
-    xvl_vec_data_gnz, _, _ = vectorize_xvl_color_matrix_data(xvl_data, palette_size=10) # generalized colors
-    vectors_gnz = xvl.vectors_of_xvl_data(xvl_vec_data_gnz)
+    gnz_palette = ['#FF0000', '#00FF00', '#0000FF',
+                   '#FF8800', '#88FF00', '#0088FF',
+                   '#FF0088', '#00FF88', '#8800FF']
 
-    # vectors_gnz = []
-    # color_count = len(idx_palette_map)
-    # for vector in vectors:
-    #     color_vec = [0] * color_count
-    #     for i in vector:
-    #         color_vec[i] = 1
-    #     vectors_gnz.append(color_vec)
-    #
+    # generalized colors
+    # xvl_vec_data_gnz, _, _ = vectorize_xvl_color_matrix_data(xvl_data, palette_size=10)
+    # vectors_gnz = xvl.vectors_of_xvl_data(xvl_vec_data_gnz)
+
+    vectors_gnz = []
+    color_count = len(idx_palette_map)
+    for vector in vectors:
+        color_vec = [0] * color_count
+        for i in vector:
+            color_vec[i] = 1
+        vectors_gnz.append(color_vec)
+
     vectors = [vectors[i] + vectors_gnz[i] for i in range(len(vectors))]
 
     labels = xvl.labels_of_xvl_data(xvl_vec_data)

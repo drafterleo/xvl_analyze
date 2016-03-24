@@ -24,7 +24,7 @@ def learn_predict(xvl_vec_data):
     # vectors = [[int(palette_map[str(idx)][1:], 16) for idx in v[:9]] + v[9:] for v in vectors]
 
     print(xvl_vec_data['labels_map'])
-    print(vectors[0])
+    print(vectors[0:3])
 
     tst_count = 20
 
@@ -36,13 +36,13 @@ def learn_predict(xvl_vec_data):
 
     # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear')
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
-    # classifier = LinearDiscriminantAnalysis(solver='svd')
+    classifier = LinearDiscriminantAnalysis(solver='svd')
     # classifier = GaussianNB()
     # classifier = DecisionTreeClassifier()
-    classifier = RandomForestClassifier(n_estimators=350,
-                                        warm_start=True, oob_score=True,
-                                        max_features=None,
-                                        random_state=None)
+    # classifier = RandomForestClassifier(n_estimators=350,
+    #                                     warm_start=True, oob_score=True,
+    #                                     max_features=None,
+    #                                     random_state=None)
     classifier.fit(X, Y)
 
     print(list(classifier.predict(X_tst)))
@@ -88,8 +88,8 @@ def make_and_save_xvl_vec_data(xvl_file, json_file):
 
 
 if __name__ ==  "__main__":
-    # xvl_vec_data = make_and_save_xvl_vec_data("rgb_src.xvl", "rgb_src_vec.json")
+    xvl_vec_data = make_and_save_xvl_vec_data("pleasant.xvl", "pleasant_vec.json")
 
-    xvl_vec_data = xvl.load_from_json("rgb_src_vec.json")
+    xvl_vec_data = xvl.load_from_json("pleasant_vec.json")
 
     learn_predict(xvl_vec_data)
