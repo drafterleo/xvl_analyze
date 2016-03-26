@@ -15,14 +15,14 @@ def rgb2hex(rgb):
 
 hexColorPattern = re.compile("\A#[a-fA-F0-9]{6}\Z")
 
-def hex2color(s: str):
+def hex2rgb(s: str):
     if hexColorPattern.match(s) is None:
         raise ValueError('invalid hex color string "%s"' % s)
     return tuple([int(n, 16) / 255 for n in (s[1:3], s[3:5], s[5:7])])
 
 
 def make_cluster_map(colors, n_clusters=100):
-    color_vectors = np.array([hex2color(c) for c in colors])
+    color_vectors = np.array([hex2rgb(c) for c in colors])
 
     # initialize a k-means object and use it to extract centroids
     kmeans_model = KMeans(n_clusters=n_clusters)
@@ -36,7 +36,7 @@ def make_cluster_map(colors, n_clusters=100):
 
 
 def norm_color_vector(hex_color):
-    vector =  np.array(hex2color(hex_color))
+    vector =  np.array(hex2rgb(hex_color))
     return vector / np.linalg.norm(vector) if np.sum(vector) > 0 else vector
 
 
@@ -44,7 +44,7 @@ def make_palette_matrix(palette):
     palette = [c if c != '#000000' else '#010101' for c in palette]
     matrix = []
     for color in palette:
-        vector = np.array(hex2color(color))    # vectorize palette color hex->rgb
+        vector = np.array(hex2rgb(color))    # vectorize palette color hex->rgb
         if np.sum(vector) > 0:
             norm = np.linalg.norm(vector)
             matrix.append(vector/norm)         # normalize palette vector
@@ -58,7 +58,7 @@ def nearest_color_cossim(color, palette, palette_matrix):
 
 
 def nearest_color_rgb(color, palette, palette_rgb):
-    color_rgb = np.array(hex2color(color))
+    color_rgb = np.array(hex2rgb(color))
     rgb_distance = np.sqrt(np.sum((palette_rgb - color_rgb) ** 2, axis=1)) # np.sum(np.abs(palette_rgb - color_rgb), axis=1)
     return palette[np.argmin(rgb_distance)]
 
@@ -66,7 +66,7 @@ def nearest_color_rgb(color, palette, palette_rgb):
 def make_palette_map(colors, palette, compare_alg=caRgbDistance):
     color_map = {}
     if compare_alg == caRgbDistance:
-        palette_rgb = np.array([hex2color(c) for c in palette])
+        palette_rgb = np.array([hex2rgb(c) for c in palette])
         for color in colors:
             color_map[color] = nearest_color_rgb(color, palette, palette_rgb)
     else: # caCosSimilarity

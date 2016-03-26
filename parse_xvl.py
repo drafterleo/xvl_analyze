@@ -38,6 +38,19 @@ def remap_xvl_color_matrix_file(src_file, dst_file, color_map):
     tree.write(file_or_filename=dst_file)
 
 
+def set_labels_to_xvl_color_matrix_file(src_file, dst_file, labels):
+    tree = ET.ElementTree(file=src_file)
+    root = tree.getroot()
+    if root.tag == 'xravlaste':
+        i = 0
+        for item in root:
+            if item.tag == 'item':
+                name_item = item[0]
+                name_item.text = labels[i]
+                i += 1
+    tree.write(file_or_filename=dst_file)
+
+
 def show_colors(colors: list):
     fig = plt.figure()
     y = 0
