@@ -18,7 +18,7 @@ hexColorPattern = re.compile("\A#[a-fA-F0-9]{6}\Z")
 def hex2color(s: str):
     if hexColorPattern.match(s) is None:
         raise ValueError('invalid hex color string "%s"' % s)
-    return tuple([int(n, 16) / 255.0 for n in (s[1:3], s[3:5], s[5:7])])
+    return tuple([int(n, 16) / 255 for n in (s[1:3], s[3:5], s[5:7])])
 
 
 def make_cluster_map(colors, n_clusters=100):

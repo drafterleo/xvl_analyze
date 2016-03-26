@@ -24,9 +24,9 @@ def learn_predict(xvl_vec_data):
     # vectors = [[int(palette_map[str(idx)][1:], 16) for idx in v[:9]] + v[9:] for v in vectors]
 
     print(xvl_vec_data['labels_map'])
-    print(vectors[0:3])
+    print(vectors[2:5])
 
-    tst_count = 20
+    tst_count = 50
 
     X = vectors[:-tst_count]
     Y = labels[:-tst_count]
@@ -34,12 +34,12 @@ def learn_predict(xvl_vec_data):
     X_tst = vectors[-tst_count:]
     Y_tst = labels[-tst_count:]
 
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear')
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
-    classifier = LinearDiscriminantAnalysis(solver='svd')
-    # classifier = GaussianNB()
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='rbf')
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
+    # classifier = LinearDiscriminantAnalysis(solver='svd')
+    classifier = GaussianNB()
     # classifier = DecisionTreeClassifier()
-    # classifier = RandomForestClassifier(n_estimators=350,
+    # classifier = RandomForestClassifier(n_estimators=400,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
     #                                     random_state=None)
@@ -49,7 +49,7 @@ def learn_predict(xvl_vec_data):
     print(Y_tst)
     print(classifier.fit(X, Y).score(X_tst, Y_tst))
 
-    # show_pca_transform(X, Y)
+    show_pca_transform(X, Y)
     # show_2D_projections(X, Y)
 
 
@@ -88,8 +88,8 @@ def make_and_save_xvl_vec_data(xvl_file, json_file):
 
 
 if __name__ ==  "__main__":
-    xvl_vec_data = make_and_save_xvl_vec_data("pleasant.xvl", "pleasant_vec.json")
+    # xvl_vec_data = make_and_save_xvl_vec_data("rgb.xvl", "rgb_vec.json")
 
-    xvl_vec_data = xvl.load_from_json("pleasant_vec.json")
+    xvl_vec_data = xvl.load_from_json("rgb_vec.json")
 
     learn_predict(xvl_vec_data)
