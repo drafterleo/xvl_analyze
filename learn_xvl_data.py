@@ -14,7 +14,8 @@ import itertools
 
 import parse_xvl as xvl
 import color_maps as cmaps
-from vectorize_xvl_data import make_xvl_color_matrix_vec_data, mean_by_indices
+from color_palette import color_names
+from vectorize_xvl_data import make_xvl_color_vec_data, mean_by_indices
 
 
 def train_learn_predict(xvl_vec_data, use_PCA=False):
@@ -37,10 +38,10 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     X_tst = vectors[-tst_count:]
     Y_tst = labels[-tst_count:]
 
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=0.3)
+    classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=0.5)
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=17, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd')
-    classifier = GaussianNB()
+    # classifier = GaussianNB()
     # classifier = DecisionTreeClassifier()
     # classifier = RandomForestClassifier(n_estimators=350,
     #                                     warm_start=True, oob_score=True,
@@ -53,7 +54,7 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     print(classifier.fit(X, Y).score(X_tst, Y_tst))
 
     X_pca = show_pca_transform(X, Y)
-    #show_2D_projections(X_pca, Y)
+    show_2D_projections(X_pca, Y)
 
 
 def test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False):
@@ -68,12 +69,12 @@ def test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False):
         X = pca.transform(X)
         X_tst = pca.transform(X_tst)
 
-
     classifier = GaussianNB()
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=0.5)
     # classifier = RandomForestClassifier(n_estimators=350,
-    #                                 warm_start=True, oob_score=True,
-    #                                 max_features=None,
-    #                                 random_state=None)
+    #                                     warm_start=True, oob_score=True,
+    #                                     max_features=None,
+    #                                     random_state=None)
     classifier.fit(X, Y)
     predicted_labels = list(classifier.predict(X_tst))
     labels = [labels_map[str(label)] for label in predicted_labels]
@@ -124,31 +125,47 @@ def vectorize_and_save_xvl_data(xvl_file, json_file, palette=[]):
         color_list = list(xvl.xvl_data_color_set(xvl_data))
         _, palette = cmaps.make_cluster_map(color_list, n_clusters=150)
 
-    xvl_vec_data = make_xvl_color_matrix_vec_data(xvl_data, palette)
+    xvl_vec_data = make_xvl_color_vec_data(xvl_data, palette)
     xvl.save_to_json(xvl_vec_data, json_file)
     return xvl_vec_data
 
 
+def compare_labels(labels_a, labels_b):
+    if len(labels_a) == len(labels_b):
+        diff = [i for i in range(len(labels_a)) if labels_a[i] != labels_b[i]]
+        print(1.0 - len(diff)/len(labels_a))
+        print(diff)
+
 def train():
-    lrn_vec_data = vectorize_and_save_xvl_data("rgb.xvl", "rgb_vec.json")
+    palette = list(color_names.values())
+    lrn_vec_data = vectorize_and_save_xvl_data("rgb.xvl", "rgb_vec.json", palette=palette)
     lrn_vec_data = xvl.load_from_json("rgb_vec.json")
     train_learn_predict(lrn_vec_data, use_PCA=True)
 
 
 def test():
-    lrn_vec_data = vectorize_and_save_xvl_data("rgb.xvl", "rgb_vec.json")
-    tst_vec_data = vectorize_and_save_xvl_data("rgb_tst.xvl", "rgb_tst_vec.json", palette=lrn_vec_data['palette'])
+    palette = list(color_names.values())
+    lrn_vec_data = vectorize_and_save_xvl_data("rgb.xvl", "rgb_vec.json", palette=palette)
+    tst_vec_data = vectorize_and_save_xvl_data("rgb_tst.xvl", "rgb_tst_vec.json", palette=palette) # palette=lrn_vec_data['palette'])
+
+    my_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
+    my_labels = xvl.labels_of_xvl_data(my_xvl_data)
+    print(my_labels)
 
     lrn_vec_data = xvl.load_from_json("rgb_vec.json")
     tst_vec_data = xvl.load_from_json("rgb_tst_vec.json")
 
-    res_labels = test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=True)
+    res_labels = test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False)
+    print("predicted:")
     print(res_labels)
+    compare_labels(my_labels, res_labels)
     xvl.set_labels_to_xvl_color_matrix_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
 
     tst_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_tst.xvl")
     mean_labels = mean_rgb_labels(tst_xvl_data)
+    print("mean:")
     print(mean_labels)
+    compare_labels(my_labels, mean_labels)
     xvl.set_labels_to_xvl_color_matrix_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
 
 
@@ -156,6 +173,6 @@ if __name__ ==  "__main__":
     # train()
     test()
 
-    # tst_xvl_data = xvl.parse_xvl_color_matrix_file("rgb.xvl")
+    # tst_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_tst.xvl")
     # mean_labels = mean_rgb_labels(tst_xvl_data)
     # xvl.set_labels_to_xvl_color_matrix_file("rgb.xvl", "rgb_mean.xvl", mean_labels)
