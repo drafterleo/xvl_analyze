@@ -96,9 +96,7 @@ def make_xvl_color_vec_data(xvl_data, palette=[]):
                     for vec in hex_vectors]
     diff_features = [flatten_list([rgb_diff(c) for c in vec])
                      for vec in hex_vectors]
-
     mean_features = make_mean_features(xvl.vectors_of_xvl_data(xvl_data))
-
     vectors = [  vectors[i]
                + mean_features[i]
                + hsv_features[i]
