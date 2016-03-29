@@ -8,6 +8,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import  LogisticRegression
 
+from sklearn.cluster import KMeans
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -39,8 +41,8 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     X_tst = vectors[-tst_count:]
     Y_tst = labels[-tst_count:]
 
-    classifier = GaussianNB()
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=0.7)
+    # classifier = GaussianNB()
+    classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.2)
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
     # classifier = LogisticRegression()
@@ -71,9 +73,9 @@ def test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False):
         X = pca.transform(X)
         X_tst = pca.transform(X_tst)
 
-    classifier = GaussianNB()
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.21)
+    # classifier = GaussianNB()
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
+    classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.21)
     # classifier = RandomForestClassifier(n_estimators=200,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
@@ -146,7 +148,7 @@ def compare_labels(labels_a, labels_b):
 
 def train():
     palette = list(color_names.values())
-    lrn_vec_data = vectorize_xvl_color_data("rgb.xvl", palette=[])
+    lrn_vec_data = vectorize_xvl_color_data("rgb.xvl", palette=palette)
     # lrn_vec_data = xvl.load_from_json("rgb_vec.json")
     train_learn_predict(lrn_vec_data, use_PCA=False)
 
@@ -177,10 +179,29 @@ def test():
     xvl.set_labels_to_xvl_color_matrix_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
 
 
+def cluster_matrices():
+    xvl_file = "rgb.xvl"
+    palette = list(color_names.values())
+    xvl_vec_data = vectorize_xvl_color_data(xvl_file, palette=palette)
+    vectors = xvl_vec_data['vectors']
+
+    kmeans_model = KMeans(n_clusters=30)
+    idx = kmeans_model.fit_predict(vectors)
+
+    labels = [str(i) for i in idx]
+    xvl.set_labels_to_xvl_color_matrix_file(xvl_file, "rgb_cluster.xvl", labels)
+
+
+
+
+
+
 if __name__ ==  "__main__":
     # train()
-    test()
+    # test()
+    cluster_matrices()
 
-    # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb.xvl")
+    # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)
-    # xvl.set_labels_to_xvl_color_matrix_file("rgb.xvl", "rgb_mean.xvl", mean_labels)
+    # xvl.set_labels_to_xvl_color_matrix_file("rgb_my.xvl", "rgb_my.xvl", mean_labels)
+    # compare_labels(xvl.labels_of_xvl_data(rgb_xvl_data), mean_labels)
