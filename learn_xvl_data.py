@@ -122,7 +122,7 @@ def show_pca_transform(X, Y):
     return X_pca
 
 
-def vectorize_and_save_xvl_data(xvl_file, json_file, palette=[]):
+def vectorize_xvl_color_data(xvl_file, json_file='', palette=[]):
     xvl_data = xvl.parse_xvl_color_matrix_file(xvl_file)
 
     if not palette:
@@ -130,7 +130,10 @@ def vectorize_and_save_xvl_data(xvl_file, json_file, palette=[]):
         _, palette = cmaps.make_cluster_map(color_list, n_clusters=150)
 
     xvl_vec_data = make_xvl_color_vec_data(xvl_data, palette)
-    xvl.save_to_json(xvl_vec_data, json_file)
+
+    if json_file:
+        xvl.save_to_json(xvl_vec_data, json_file)
+
     return xvl_vec_data
 
 
@@ -143,15 +146,15 @@ def compare_labels(labels_a, labels_b):
 
 def train():
     palette = list(color_names.values())
-    lrn_vec_data = vectorize_and_save_xvl_data("rgb_mean.xvl", "rgb_vec.json", palette=palette)
+    lrn_vec_data = vectorize_xvl_color_data("rgb.xvl", palette=[])
     # lrn_vec_data = xvl.load_from_json("rgb_vec.json")
     train_learn_predict(lrn_vec_data, use_PCA=False)
 
 
 def test():
     palette = list(color_names.values())
-    lrn_vec_data = vectorize_and_save_xvl_data("rgb.xvl", "rgb_vec.json", palette=palette)
-    tst_vec_data = vectorize_and_save_xvl_data("rgb_tst.xvl", "rgb_tst_vec.json", palette=palette) # palette=lrn_vec_data['palette'])
+    lrn_vec_data = vectorize_xvl_color_data("rgb.xvl", palette=palette)
+    tst_vec_data = vectorize_xvl_color_data("rgb_tst.xvl", palette=palette) # palette=lrn_vec_data['palette'])
 
     my_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     my_labels = xvl.labels_of_xvl_data(my_xvl_data)
@@ -175,8 +178,8 @@ def test():
 
 
 if __name__ ==  "__main__":
-    train()
-    # test()
+    # train()
+    test()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)
