@@ -77,7 +77,9 @@ def make_mean_features(hex_color_vectors):
             features[i] += list(f[i])
     return features
 
-
+def rgb_diff(hex_color: str):
+    r, g, b = cmaps.hex2rgb(hex_color)
+    return abs(r - g), abs(g - b), abs(b - r)
 
 def make_xvl_color_vec_data(xvl_data, palette=[]):
     xvl_vec_data, idx_label_map = vectorize_xvl_color_data(xvl_data, palette=palette)
@@ -92,10 +94,16 @@ def make_xvl_color_vec_data(xvl_data, palette=[]):
     hex_vectors = xvl.vectors_of_xvl_data(xvl_data)
     hsv_features = [[colorsys.rgb_to_hsv(*cmaps.hex2rgb(c))[0] for c in vec]
                     for vec in hex_vectors]
+    diff_features = [flatten_list([rgb_diff(c) for c in vec])
+                     for vec in hex_vectors]
 
     mean_features = make_mean_features(xvl.vectors_of_xvl_data(xvl_data))
 
-    vectors = [vectors[i] + mean_features[i] + hsv_features[i] # + gnz_features[i]
+    vectors = [  vectors[i]
+               + mean_features[i]
+               + hsv_features[i]
+               + diff_features[i]
+               # + gnz_features[i]
                for i in range(len(vectors))]
 
     labels = xvl.labels_of_xvl_data(xvl_vec_data)

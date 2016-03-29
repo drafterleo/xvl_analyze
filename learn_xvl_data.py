@@ -39,13 +39,13 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     X_tst = vectors[-tst_count:]
     Y_tst = labels[-tst_count:]
 
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=0.5)
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=17, n_jobs=-1)
-    # classifier = LinearDiscriminantAnalysis(solver='svd')
-    classifier = LogisticRegression()
-    # classifier = GaussianNB()
+    classifier = GaussianNB()
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=0.7)
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
+    # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
+    # classifier = LogisticRegression()
     # classifier = DecisionTreeClassifier()
-    # classifier = RandomForestClassifier(n_estimators=350,
+    # classifier = RandomForestClassifier(n_estimators=200,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
     #                                     random_state=None)
@@ -72,9 +72,9 @@ def test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False):
         X_tst = pca.transform(X_tst)
 
     classifier = GaussianNB()
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
     # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.21)
-    # classifier = RandomForestClassifier(n_estimators=350,
+    # classifier = RandomForestClassifier(n_estimators=200,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
     #                                     random_state=None)
@@ -140,11 +140,12 @@ def compare_labels(labels_a, labels_b):
         print(1.0 - len(diff)/len(labels_a))
         print(diff)
 
+
 def train():
     palette = list(color_names.values())
     lrn_vec_data = vectorize_and_save_xvl_data("rgb_mean.xvl", "rgb_vec.json", palette=palette)
     # lrn_vec_data = xvl.load_from_json("rgb_vec.json")
-    train_learn_predict(lrn_vec_data, use_PCA=True)
+    train_learn_predict(lrn_vec_data, use_PCA=False)
 
 
 def test():
@@ -174,8 +175,8 @@ def test():
 
 
 if __name__ ==  "__main__":
-    # train()
-    test()
+    train()
+    # test()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)
