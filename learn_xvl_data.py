@@ -18,7 +18,7 @@ import itertools
 import parse_xvl as xvl
 import color_maps as cmaps
 from color_palette import color_names
-from vectorize_xvl_data import make_xvl_color_vec_data, mean_by_indices
+from vectorize_xvl_data import make_xvl_color_vec_data, mean_by_indices, vectorize_xvl_color_data
 
 
 def train_learn_predict(xvl_vec_data, use_PCA=False):
@@ -41,8 +41,8 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     X_tst = vectors[-tst_count:]
     Y_tst = labels[-tst_count:]
 
-    # classifier = GaussianNB()
-    classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.2)
+    classifier = GaussianNB()
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.2)
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
     # classifier = LogisticRegression()
@@ -124,12 +124,12 @@ def show_pca_transform(X, Y):
     return X_pca
 
 
-def vectorize_xvl_color_data(xvl_file, json_file='', palette=[]):
+def vectorize_xvl_color_file(xvl_file, json_file='', palette=[]):
     xvl_data = xvl.parse_xvl_color_matrix_file(xvl_file)
 
-    if not palette:
-        color_list = list(xvl.xvl_data_color_set(xvl_data))
-        _, palette = cmaps.make_cluster_map(color_list, n_clusters=150)
+    # if not palette:
+    #     color_list = list(xvl.xvl_data_color_set(xvl_data))
+    #     _, palette = cmaps.make_cluster_map(color_list, n_clusters=150)
 
     xvl_vec_data = make_xvl_color_vec_data(xvl_data, palette)
 
@@ -148,15 +148,15 @@ def compare_labels(labels_a, labels_b):
 
 def train():
     palette = list(color_names.values())
-    lrn_vec_data = vectorize_xvl_color_data("rgb.xvl", palette=palette)
+    lrn_vec_data = vectorize_xvl_color_file("rgb_mean.xvl", palette=[])
     # lrn_vec_data = xvl.load_from_json("rgb_vec.json")
     train_learn_predict(lrn_vec_data, use_PCA=False)
 
 
 def test():
     palette = list(color_names.values())
-    lrn_vec_data = vectorize_xvl_color_data("rgb.xvl", palette=palette)
-    tst_vec_data = vectorize_xvl_color_data("rgb_tst.xvl", palette=palette) # palette=lrn_vec_data['palette'])
+    lrn_vec_data = vectorize_xvl_color_file("rgb.xvl", palette=[])
+    tst_vec_data = vectorize_xvl_color_file("rgb_tst.xvl", palette=[]) # palette=lrn_vec_data['palette'])
 
     my_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     my_labels = xvl.labels_of_xvl_data(my_xvl_data)
@@ -166,6 +166,7 @@ def test():
     # tst_vec_data = xvl.load_from_json("rgb_tst_vec.json")
 
     res_labels = test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False)
+
     print("predicted:")
     print(res_labels)
     compare_labels(my_labels, res_labels)
@@ -181,19 +182,18 @@ def test():
 
 def cluster_matrices():
     xvl_file = "rgb.xvl"
-    palette = list(color_names.values())
-    xvl_vec_data = vectorize_xvl_color_data(xvl_file, palette=palette)
-    vectors = xvl_vec_data['vectors']
+    xvl_data = xvl.parse_xvl_color_matrix_file(xvl_file)
+    xvl_vec_data, _ = vectorize_xvl_color_data(xvl_data, palette=[])
+    vectors = [v for l, v in xvl_vec_data]
+    print(vectors)
+    # xvl_vec_data = vectorize_xvl_color_file(xvl_file, palette=[])
+    # vectors = xvl_vec_data['vectors']
 
-    kmeans_model = KMeans(n_clusters=30)
+    kmeans_model = KMeans(n_clusters=10)
     idx = kmeans_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
     xvl.set_labels_to_xvl_color_matrix_file(xvl_file, "rgb_cluster.xvl", labels)
-
-
-
-
 
 
 if __name__ ==  "__main__":

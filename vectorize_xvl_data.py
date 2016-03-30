@@ -114,15 +114,9 @@ def make_xvl_color_vec_data(xvl_data, palette=[]):
 
 def test():
     xvl_data = xvl.parse_xvl_color_matrix_file("ai_src.xvl")
-    xvl_vec_data, idx_palette_map, idx_labels_map = vectorize_xvl_color_data(xvl_data)
-    print(idx_palette_map)
+    xvl_vec_data, idx_labels_map = vectorize_xvl_color_data(xvl_data)
     print(xvl_vec_data)
     print(len(xvl_vec_data))
-
-    xvl_vec_item = xvl_vec_data[0]
-    remap = [idx_palette_map[idx] for idx in xvl_vec_item[1]]
-    print(xvl_data[0][1])
-    print(remap)
 
 
 if __name__ ==  "__main__":
