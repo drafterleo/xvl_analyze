@@ -1,6 +1,7 @@
 import xml.etree.cElementTree as ET
 import matplotlib.pyplot as plt
 import json
+from pprint import pprint
 
 # http://eli.thegreenplace.net/2012/03/15/processing-xml-in-python-with-elementtree
 def parse_xvl_color_matrix_file(file_name) -> list:
@@ -64,6 +65,37 @@ def show_colors(colors: list):
         y += h
     plt.show()
 
+# [(label, [
+#               [(x, y), (x, y)...], # figure 1 points
+#               [(x, y), (x, y)...], # figure 2 points
+#               ...
+#           ]
+#   ),
+# ... ]
+def parse_xvl_figures_file(file_name) -> list:
+    data = []
+    tree = ET.ElementTree(file=file_name)
+    root = tree.getroot()
+    if root.tag == 'xravlaste':
+        for item in root:
+            if item.tag == 'item':
+                word = item[0]
+                # spec = item[1]
+                pixra = item[2]
+                label = word.text
+                figs = []
+                for figure in pixra:
+                    if figure.tag == 'figure':
+                        fig = []
+                        for anchor in figure:
+                            if anchor.tag == 'anchor':
+                                fig.append((float(anchor.attrib['x']), float(anchor.attrib['y'])))
+                        min_idx =fig.index(min(fig)) # bottom-left point idx
+                        fig_norm_order = fig[min_idx:] + fig[0:min_idx]
+                        figs.append(fig_norm_order)
+                data.append((label, figs))
+    return data
+
 
 def xvl_data_label_set(data):
     labels = set()
@@ -88,13 +120,19 @@ def xvl_data_color_set(data):
     return colors
 
 
-def test_xvl_parser():
+def test_xvl_color_parser():
     xvl_data = parse_xvl_color_matrix_file("animate_inanimate_colors.xvl")
     print(len(xvl_data), xvl_data)
     print(xvl_data_label_set(xvl_data))
     color_set = xvl_data_color_set(xvl_data)
     print(len(color_set))
     show_colors(xvl_data[0][1])
+
+
+def test_xvl_figures_parser():
+    xvl_data = parse_xvl_figures_file("rnd_denominate.xvl")
+    pprint(xvl_data)
+    print(len(xvl_data))
 
 
 def save_to_json(xvl_data, file_name):
@@ -109,4 +147,5 @@ def load_from_json(file_name):
 
 
 if __name__ ==  "__main__":
-    test_xvl_parser()
+    # test_xvl_color_parser()
+    test_xvl_figures_parser()
