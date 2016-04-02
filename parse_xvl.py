@@ -1,9 +1,11 @@
+# http://eli.thegreenplace.net/2012/03/15/processing-xml-in-python-with-elementtree
+
 import xml.etree.cElementTree as ET
 import matplotlib.pyplot as plt
 import json
 from pprint import pprint
 
-# http://eli.thegreenplace.net/2012/03/15/processing-xml-in-python-with-elementtree
+
 def parse_xvl_color_matrix_file(file_name) -> list:
     data = []
     tree = ET.ElementTree(file=file_name)
@@ -39,7 +41,7 @@ def remap_xvl_color_matrix_file(src_file, dst_file, color_map):
     tree.write(file_or_filename=dst_file)
 
 
-def set_labels_to_xvl_color_matrix_file(src_file, dst_file, labels):
+def set_labels_to_xvl_file(src_file, dst_file, labels):
     tree = ET.ElementTree(file=src_file)
     root = tree.getroot()
     if root.tag == 'xravlaste':
@@ -49,6 +51,9 @@ def set_labels_to_xvl_color_matrix_file(src_file, dst_file, labels):
                 name_item = item[0]
                 name_item.text = labels[i]
                 i += 1
+                if i >= len(labels):
+                    print('set_labels_to_xvl_file: label list shorter than item count!')
+                    break
     tree.write(file_or_filename=dst_file)
 
 
@@ -64,6 +69,7 @@ def show_colors(colors: list):
         ax.annotate(color, pos)
         y += h
     plt.show()
+
 
 # [(label, [
 #               [(x, y), (x, y)...], # figure 1 points
@@ -83,17 +89,20 @@ def parse_xvl_figures_file(file_name) -> list:
                 # spec = item[1]
                 pixra = item[2]
                 label = word.text
-                figs = []
+                fig_lst = []
+                fig_types = []
                 for figure in pixra:
                     if figure.tag == 'figure':
+                        fig_types.append(figure.attrib['type'])
                         fig = []
                         for anchor in figure:
                             if anchor.tag == 'anchor':
                                 fig.append((float(anchor.attrib['x']), float(anchor.attrib['y'])))
-                        min_idx =fig.index(min(fig)) # bottom-left point idx
-                        fig_norm_order = fig[min_idx:] + fig[0:min_idx]
-                        figs.append(fig_norm_order)
-                data.append((label, figs))
+                        # normalize figure anchors (bottom-left anchor becomes first in list)
+                        min_idx = fig.index(min(fig))                    # bottom-left point idx
+                        fig_norm_order = fig[min_idx:] + fig[0:min_idx]  # reorder points
+                        fig_lst.append(fig_norm_order)
+                data.append((label, fig_lst, fig_types))
     return data
 
 
@@ -146,6 +155,6 @@ def load_from_json(file_name):
     return data
 
 
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     # test_xvl_color_parser()
     test_xvl_figures_parser()

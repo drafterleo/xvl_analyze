@@ -170,14 +170,14 @@ def test():
     print("predicted:")
     print(res_labels)
     compare_labels(my_labels, res_labels)
-    xvl.set_labels_to_xvl_color_matrix_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
+    xvl.set_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
 
     tst_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_tst.xvl")
     mean_labels = mean_rgb_labels(tst_xvl_data)
     print("mean:")
     print(mean_labels)
     compare_labels(my_labels, mean_labels)
-    xvl.set_labels_to_xvl_color_matrix_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
+    xvl.set_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
 
 
 def cluster_matrices():
@@ -193,7 +193,7 @@ def cluster_matrices():
     idx = kmeans_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
-    xvl.set_labels_to_xvl_color_matrix_file(xvl_file, "rgb_cluster.xvl", labels)
+    xvl.set_labels_to_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
 
 
 if __name__ ==  "__main__":
