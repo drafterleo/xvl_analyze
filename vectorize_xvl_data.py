@@ -3,6 +3,8 @@ import color_maps as cmaps
 import numpy as np
 import itertools
 import colorsys
+from operator import itemgetter
+from math import sqrt
 from color_palette import color_names
 from pprint import pprint
 
@@ -118,10 +120,10 @@ def make_xvl_color_vec_data(xvl_data, palette=[]) -> dict:
 
 # figure: [(x, y), (x, y), ...]
 def fig_center(figure: list) -> (float, float):
-    min_x = min(figure, key=lambda p: p[0])[0]
-    min_y = min(figure, key=lambda p: p[1])[1]
-    max_x = max(figure, key=lambda p: p[0])[0]
-    max_y = max(figure, key=lambda p: p[1])[1]
+    min_x = min(figure, key=itemgetter(0))[0]
+    min_y = min(figure, key=itemgetter(1))[1]
+    max_x = max(figure, key=itemgetter(0))[0]
+    max_y = max(figure, key=itemgetter(1))[1]
     center_x = min_x + (max_x - min_x)/2
     center_y = min_y + (max_y - min_y)/2
     return center_x, center_y
@@ -135,26 +137,57 @@ def fig_distance(fig1, fig2) -> (float, float):
     return dx, dy
 
 
+# figure: [(x, y), (x, y), ...]
+def fig_deltas(fig):
+    deltas = [(fig[i][0] - fig[i + 1][0], fig[i][1] - fig[i + 1][1])
+              for i in range(len(fig) - 1)]
+    return deltas
+
+
+# figure: [(x, y), (x, y), ...]
+def fig_angles(fig) -> list:
+    angles = []
+    ext_fig = [fig[-1]] + fig + [fig[0]]
+    for i in range(1, len(ext_fig) - 1):
+        ax, ay = ext_fig[i]       # curr vertex
+        px, py = ext_fig[i - 1]   # prev vertex
+        nx, ny = ext_fig[i + 1]   # next vertex
+        nx -= ax; px -= ax
+        py -= ay; ny -= ay
+        cos_a = (px*nx + py*ny)/sqrt((px**2 + py**2) * (nx**2 + ny**2))
+        angles.append(cos_a)
+    return angles
+
+
 # xvl_data: [(label, figs_lst, fig_types), ...]
 def make_xvl_figures_vec_data(xvl_data) -> dict:
     labels = [item[0] for item in xvl_data]
     idx_label_map = dict(enumerate(list(set(labels))))
 
     figs_lst = [item[1] for item in xvl_data]
+    fig_types = [item[2] for item in xvl_data]
 
     # dx, dy between anchors
-    delta_features = [flatten([flatten([(fig[i][0] - fig[i + 1][0], fig[i][1] - fig[i + 1][1])
-                                        for i in range(len(fig) - 1)])
-                               for fig in figs])
+    delta_features = [flatten([flatten(fig_deltas(fig)) for fig in figs])
                       for figs in figs_lst]
-    print(figs_lst)
-    print(delta_features)
-
+    # distances between figures
     distance_features = [flatten([fig_distance(figs[i], figs[i + 1])
                                   for i in range(len(figs) - 1)])
                          for figs in figs_lst]
+    # angles in figure
+    angle_features = [flatten([fig_angles(fig) for fig in figs])
+                      for figs in figs_lst]
 
-    print(distance_features)
+    vectors = [distance_features[i]
+               + delta_features
+               + angle_features
+               for i in range(len(figs_lst))]
+
+    return {'labels_map': idx_label_map,
+            'labels'    : labels,
+            'vectors'   : vectors,
+            'figures'   : figs_lst,
+            'types'     : fig_types}
 
 
 def test_color_vectorize():

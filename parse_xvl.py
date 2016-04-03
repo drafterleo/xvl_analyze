@@ -98,8 +98,8 @@ def parse_xvl_figures_file(file_name) -> list:
                         for anchor in figure:
                             if anchor.tag == 'anchor':
                                 fig.append((float(anchor.attrib['x']), float(anchor.attrib['y'])))
-                        # normalize figure anchors (bottom-left anchor becomes first in list)
-                        min_idx = fig.index(min(fig))                    # bottom-left point idx
+                        # normalize figure anchors (top-left anchor becomes first in list)
+                        min_idx = fig.index(min(fig))                    # top-left point idx
                         fig_norm_order = fig[min_idx:] + fig[0:min_idx]  # reorder points
                         fig_lst.append(fig_norm_order)
                 data.append((label, fig_lst, fig_types))
