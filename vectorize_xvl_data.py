@@ -159,34 +159,34 @@ def fig_angles(fig) -> list:
     return angles
 
 
-# xvl_data: [(label, figs_lst, fig_types), ...]
+# xvl_data: [(label, pixra[figure1, figure2, ...], fig_types), ...]
 def make_xvl_figures_vec_data(xvl_data) -> dict:
     labels = [item[0] for item in xvl_data]
     idx_label_map = dict(enumerate(list(set(labels))))
 
-    figs_lst = [item[1] for item in xvl_data]
+    pixras = [item[1] for item in xvl_data]
     fig_types = [item[2] for item in xvl_data]
 
     # dx, dy between anchors
     delta_features = [flatten([flatten(fig_deltas(fig)) for fig in figs])
-                      for figs in figs_lst]
+                      for figs in pixras]
     # distances between figures
     distance_features = [flatten([fig_distance(figs[i], figs[i + 1])
                                   for i in range(len(figs) - 1)])
-                         for figs in figs_lst]
+                         for figs in pixras]
     # angles in figure
     angle_features = [flatten([fig_angles(fig) for fig in figs])
-                      for figs in figs_lst]
+                      for figs in pixras]
 
     vectors = [distance_features[i]
-               + delta_features
-               + angle_features
-               for i in range(len(figs_lst))]
+               + delta_features[i]
+               + angle_features[i]
+               for i in range(len(pixras))]
 
     return {'labels_map': idx_label_map,
             'labels'    : labels,
             'vectors'   : vectors,
-            'figures'   : figs_lst,
+            'figures'   : pixras,
             'types'     : fig_types}
 
 

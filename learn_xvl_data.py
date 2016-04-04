@@ -8,7 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import  LogisticRegression
 
-from sklearn.cluster import KMeans
+from sklearn import cluster
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -17,8 +17,9 @@ import itertools
 
 import parse_xvl as xvl
 import color_maps as cmaps
+import vectorize_xvl_data as xvlvec
 from color_palette import color_names
-from vectorize_xvl_data import make_xvl_color_vec_data, mean_by_indices, vectorize_xvl_color_data
+
 
 
 def train_learn_predict(xvl_vec_data, use_PCA=False):
@@ -91,7 +92,7 @@ def mean_rgb_labels(xvl_data):
     rgb_map = ('r', 'g', 'b')
     hex_vectors = xvl.vectors_of_xvl_data(xvl_data)
     rgb_vectors = [[cmaps.hex2rgb(c) for c in v] for v in hex_vectors]
-    rgb_mean = mean_by_indices(rgb_vectors, list(range(9)))
+    rgb_mean = xvlvec.mean_by_indices(rgb_vectors, list(range(9)))
     labels = [rgb_map[np.argmax(rgb)] for rgb in rgb_mean]
     return labels
 
@@ -131,7 +132,7 @@ def vectorize_xvl_color_file(xvl_file, json_file='', palette=[]):
     #     color_list = list(xvl.xvl_data_color_set(xvl_data))
     #     _, palette = cmaps.make_cluster_map(color_list, n_clusters=150)
 
-    xvl_vec_data = make_xvl_color_vec_data(xvl_data, palette)
+    xvl_vec_data = xvlvec.make_xvl_color_vec_data(xvl_data, palette)
 
     if json_file:
         xvl.save_to_json(xvl_vec_data, json_file)
@@ -180,26 +181,52 @@ def test():
     xvl.set_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
 
 
-def cluster_matrices():
+def cluster_color_matrices():
     xvl_file = "rgb.xvl"
     xvl_data = xvl.parse_xvl_color_matrix_file(xvl_file)
-    xvl_vec_data, _ = vectorize_xvl_color_data(xvl_data, palette=[])
+    xvl_vec_data, _ = xvlvec.vectorize_xvl_color_data(xvl_data, palette=[])
     vectors = [v for l, v in xvl_vec_data]
     print(vectors)
     # xvl_vec_data = vectorize_xvl_color_file(xvl_file, palette=[])
     # vectors = xvl_vec_data['vectors']
 
-    kmeans_model = KMeans(n_clusters=10)
+    kmeans_model = cluster.KMeans(n_clusters=10)
     idx = kmeans_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
     xvl.set_labels_to_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
 
+# http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
+def cluster_figures():
+    xvl_file = "sense.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(xvl_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data)
+
+    vectors = np.array(xvl_vec_data['vectors'])
+    print(len(vectors), vectors[:3])
+
+    n_clusters = 80
+
+    # estimate bandwidth for mean shift
+    bandwidth = cluster.estimate_bandwidth(vectors, quantile=0.3)
+
+    # kmeans_model = cluster.KMeans(n_clusters=n_clusters)
+    # kmeans_model = cluster.MeanShift()
+    # kmeans_model = cluster.SpectralClustering(n_clusters=n_clusters,
+    #                                           eigen_solver='arpack',
+    #                                           affinity="nearest_neighbors")
+    kmeans_model =  cluster.AgglomerativeClustering(n_clusters=n_clusters, linkage='ward')
+    idx = kmeans_model.fit_predict(vectors)
+
+    labels = [str(i) for i in idx]
+    xvl.set_labels_to_xvl_file(xvl_file, "sense_cluster.xvl", labels)
+
 
 if __name__ ==  "__main__":
     # train()
     # test()
-    cluster_matrices()
+    # cluster_color_matrices()
+    cluster_figures()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)

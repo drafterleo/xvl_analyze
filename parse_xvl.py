@@ -51,7 +51,7 @@ def set_labels_to_xvl_file(src_file, dst_file, labels):
                 name_item = item[0]
                 name_item.text = labels[i]
                 i += 1
-                if i >= len(labels):
+                if i > len(labels):
                     print('set_labels_to_xvl_file: label list shorter than item count!')
                     break
     tree.write(file_or_filename=dst_file)
