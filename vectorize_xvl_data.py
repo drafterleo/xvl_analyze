@@ -167,21 +167,28 @@ def make_xvl_figures_vec_data(xvl_data) -> dict:
     pixras = [item[1] for item in xvl_data]
     fig_types = [item[2] for item in xvl_data]
 
+    # coordinates
+    coordinate_features = np.array([flatten([flatten(fig) for fig in figs])
+                                    for figs in pixras])
     # dx, dy between anchors
-    delta_features = [flatten([flatten(fig_deltas(fig)) for fig in figs])
-                      for figs in pixras]
+    delta_features = np.array([flatten([flatten(fig_deltas(fig)) for fig in figs])
+                               for figs in pixras])
     # distances between figures
-    distance_features = [flatten([fig_distance(figs[i], figs[i + 1])
-                                  for i in range(len(figs) - 1)])
-                         for figs in pixras]
+    distance_features = np.array([flatten([fig_distance(figs[i], figs[i + 1])
+                                           for i in range(len(figs) - 1)])
+                                  for figs in pixras])
     # angles in figure
-    angle_features = [flatten([fig_angles(fig) for fig in figs])
-                      for figs in pixras]
+    angle_features = np.array([flatten([fig_angles(fig) for fig in figs])
+                               for figs in pixras])
 
-    vectors = [distance_features[i]
-               + delta_features[i]
-               + angle_features[i]
-               for i in range(len(pixras))]
+    vectors = np.hstack((#delta_features,
+                         coordinate_features,
+                         distance_features * 5,
+                         angle_features))
+    # vectors = [distance_features[i]
+    #            + delta_features[i]
+    #            + angle_features[i]
+    #            for i in range(len(pixras))]
 
     return {'labels_map': idx_label_map,
             'labels'    : labels,

@@ -210,13 +210,13 @@ def cluster_figures():
     # estimate bandwidth for mean shift
     bandwidth = cluster.estimate_bandwidth(vectors, quantile=0.3)
 
-    # kmeans_model = cluster.KMeans(n_clusters=n_clusters)
-    # kmeans_model = cluster.MeanShift()
-    # kmeans_model = cluster.SpectralClustering(n_clusters=n_clusters,
+    cluster_model = cluster.KMeans(n_clusters=n_clusters)
+    # cluster_model = cluster.MeanShift()
+    # cluster_model = cluster.SpectralClustering(n_clusters=n_clusters,
     #                                           eigen_solver='arpack',
     #                                           affinity="nearest_neighbors")
-    kmeans_model =  cluster.AgglomerativeClustering(n_clusters=n_clusters, linkage='ward')
-    idx = kmeans_model.fit_predict(vectors)
+    # cluster_model =  cluster.AgglomerativeClustering(n_clusters=n_clusters, linkage='ward')
+    idx = cluster_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
     xvl.set_labels_to_xvl_file(xvl_file, "sense_cluster.xvl", labels)
