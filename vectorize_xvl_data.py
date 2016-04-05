@@ -118,12 +118,17 @@ def make_xvl_color_vec_data(xvl_data, palette=[]) -> dict:
             'palette': palette}
 
 
+def fig_rect(fig):
+    min_x = min(fig, key=itemgetter(0))[0]
+    min_y = min(fig, key=itemgetter(1))[1]
+    max_x = max(fig, key=itemgetter(0))[0]
+    max_y = max(fig, key=itemgetter(1))[1]
+    return min_x, min_y, max_x, max_y
+
+
 # figure: [(x, y), (x, y), ...]
-def fig_center(figure: list) -> (float, float):
-    min_x = min(figure, key=itemgetter(0))[0]
-    min_y = min(figure, key=itemgetter(1))[1]
-    max_x = max(figure, key=itemgetter(0))[0]
-    max_y = max(figure, key=itemgetter(1))[1]
+def fig_center(fig: list) -> (float, float):
+    min_x, min_y, max_x, max_y = fig_rect(fig)
     center_x = min_x + (max_x - min_x)/2
     center_y = min_y + (max_y - min_y)/2
     return center_x, center_y
@@ -134,18 +139,20 @@ def fig_distance(fig1, fig2) -> (float, float):
     center2 = fig_center(fig2)
     dx = center1[0] - center2[0]
     dy = center1[1] - center2[1]
-    return dx, dy
+    return sqrt(dx**2 + dy**2), 0.0
 
 
 # figure: [(x, y), (x, y), ...]
-def fig_deltas(fig):
-    deltas = [(fig[i][0] - fig[i + 1][0], fig[i][1] - fig[i + 1][1])
-              for i in range(len(fig) - 1)]
+def fig_inner_deltas(fig):
+    deltas = flatten([(fig[i][0] - fig[i + 1][0], fig[i][1] - fig[i + 1][1])
+                      for i in range(len(fig) - 1)])
+    # deltas = [sqrt((fig[i][0] - fig[i + 1][0])**2 + (fig[i][1] - fig[i + 1][1])**2)
+    #           for i in range(len(fig) - 1)]
     return deltas
 
 
 # figure: [(x, y), (x, y), ...]
-def fig_angles(fig) -> list:
+def fig_inner_angles(fig) -> list:
     angles = []
     ext_fig = [fig[-1]] + fig + [fig[0]]
     for i in range(1, len(ext_fig) - 1):
@@ -159,6 +166,25 @@ def fig_angles(fig) -> list:
     return angles
 
 
+def fig_metrics(fig):
+    min_x, min_y, max_x, max_y = fig_rect(fig)
+    size_x = max_x - min_x
+    size_y = max_y - min_y
+    center_x = min_x + size_x/2
+    center_y = min_y + size_y/2
+    return size_x, size_y, center_x, center_y
+
+
+def fig_overlap(fig1, fig2) -> (float, float):
+    min_x1, min_y1, max_x1, max_y1 = fig_rect(fig1)
+    min_x2, min_y2, max_x2, max_y2 = fig_rect(fig2)
+    w1 = abs(max_x1 - min_x1)
+    h1 = abs(max_y1 - min_y1)
+    x_overlap = w1 - abs(min_x1 - min_x2)
+    y_overlap = h1 - abs(min_y1 - min_y2)
+    return x_overlap, y_overlap
+
+
 # xvl_data: [(label, pixra[figure1, figure2, ...], fig_types), ...]
 def make_xvl_figures_vec_data(xvl_data) -> dict:
     labels = [item[0] for item in xvl_data]
@@ -167,28 +193,33 @@ def make_xvl_figures_vec_data(xvl_data) -> dict:
     pixras = [item[1] for item in xvl_data]
     fig_types = [item[2] for item in xvl_data]
 
-    # coordinates
     coordinate_features = np.array([flatten([flatten(fig) for fig in figs])
                                     for figs in pixras])
-    # dx, dy between anchors
-    delta_features = np.array([flatten([flatten(fig_deltas(fig)) for fig in figs])
+    # sizes and centers
+    metric_features = np.array([flatten([fig_metrics(fig) for fig in figs])
+                                for figs in pixras])
+
+    overlap_features = np.array([flatten([fig_overlap(figs[i], figs[i + 1])
+                                          for i in range(len(figs) - 1)])
+                                 for figs in pixras])
+
+    inner_deltas_features = np.array([flatten([fig_inner_deltas(fig) for fig in figs])
                                for figs in pixras])
-    # distances between figures
+
     distance_features = np.array([flatten([fig_distance(figs[i], figs[i + 1])
                                            for i in range(len(figs) - 1)])
                                   for figs in pixras])
-    # angles in figure
-    angle_features = np.array([flatten([fig_angles(fig) for fig in figs])
-                               for figs in pixras])
 
-    vectors = np.hstack((#delta_features,
-                         coordinate_features,
-                         distance_features * 5,
-                         angle_features))
-    # vectors = [distance_features[i]
-    #            + delta_features[i]
-    #            + angle_features[i]
-    #            for i in range(len(pixras))]
+    inner_angles_features = np.array([flatten([fig_inner_angles(fig) for fig in figs])
+                                     for figs in pixras])
+
+    # vectors = overlap_features
+    vectors = np.hstack((# inner_deltas_features,
+                         metric_features,
+                         # coordinate_features,
+                         overlap_features,
+                         # inner_angles_features,
+                         distance_features))
 
     return {'labels_map': idx_label_map,
             'labels'    : labels,

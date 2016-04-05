@@ -196,16 +196,18 @@ def cluster_color_matrices():
     labels = [str(i) for i in idx]
     xvl.set_labels_to_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
 
+
 # http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
 def cluster_figures():
-    xvl_file = "sense.xvl"
+    # xvl_file = "sense.xvl"
+    xvl_file = "fig_cluster_tst.xvl"
     xvl_data = xvl.parse_xvl_figures_file(xvl_file)
     xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data)
 
     vectors = np.array(xvl_vec_data['vectors'])
-    print(len(vectors), vectors[:3])
+    print(len(vectors), vectors, vectors[14])
 
-    n_clusters = 80
+    n_clusters = 4
 
     # estimate bandwidth for mean shift
     bandwidth = cluster.estimate_bandwidth(vectors, quantile=0.3)
@@ -221,6 +223,8 @@ def cluster_figures():
     labels = [str(i) for i in idx]
     xvl.set_labels_to_xvl_file(xvl_file, "sense_cluster.xvl", labels)
 
+    # show_pca_transform(vectors, np.zeros(len(vectors), dtype=np.int))
+    # show_pca_transform(vectors, idx)
 
 if __name__ ==  "__main__":
     # train()
