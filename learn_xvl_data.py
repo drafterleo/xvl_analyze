@@ -221,10 +221,10 @@ def cluster_figures():
     idx = cluster_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
-    xvl.set_labels_to_xvl_file(xvl_file, "sense_cluster.xvl", labels)
+    xvl.set_labels_to_xvl_file(xvl_file, "fig_cluster.xvl", labels)
 
     # show_pca_transform(vectors, np.zeros(len(vectors), dtype=np.int))
-    # show_pca_transform(vectors, idx)
+    show_pca_transform(vectors, idx)
 
 if __name__ ==  "__main__":
     # train()

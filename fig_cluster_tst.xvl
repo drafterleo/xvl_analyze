@@ -463,6 +463,26 @@
         <word></word>
         <spec></spec>
         <pixra type="CFiguresPixra">
+            <figure type="CEllipseFigure">
+                <anchor x="0.205785" y="0.0285298"/>
+                <anchor x="0.370785" y="0.19353"/>
+                <anchor x="0.205785" y="0.35853"/>
+                <anchor x="0.0407845" y="0.19353"/>
+            </figure>
+            <figure type="CPolygonFigure">
+                <anchor x="0.807806" y="0.632161"/>
+                <anchor x="0.945061" y="0.711405"/>
+                <anchor x="0.945061" y="0.869893"/>
+                <anchor x="0.807806" y="0.949138"/>
+                <anchor x="0.670551" y="0.869893"/>
+                <anchor x="0.670551" y="0.711405"/>
+            </figure>
+        </pixra>
+    </item>
+    <item>
+        <word></word>
+        <spec></spec>
+        <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
                 <anchor x="0.177904" y="0.352749"/>
                 <anchor x="0.315159" y="0.431993"/>
