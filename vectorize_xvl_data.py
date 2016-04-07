@@ -5,7 +5,7 @@ import colorsys
 import itertools
 from color_palette import color_names
 from pprint import pprint
-import figure_utils as fgut
+import figure_utils as figut
 
 
 # def vectorize_xvl_color_matrix_data(xvl_data, palette_size=150, base_palette=[]):
@@ -124,7 +124,7 @@ def make_xvl_figures_vec_data(xvl_data) -> dict:
 
     # item[1][i] - figures
     # item[2][i] - figure types
-    pixras = [  [fgut.ellipse_to_polygon(item[1][i]) if item[2][i] == 'CEllipseFigure' else item[1][i]
+    pixras = [  [figut.ellipse_to_polygon(item[1][i]) if item[2][i] == 'CEllipseFigure' else item[1][i]
                  for i in range(len(item[1]))]
               for item in xvl_data]
 
@@ -133,28 +133,40 @@ def make_xvl_figures_vec_data(xvl_data) -> dict:
     coordinate_features = np.array([flatten([flatten(fig) for fig in figs])
                                     for figs in pixras])
     # sizes and centers
-    metric_features = np.array([flatten([fgut.fig_metrics(fig) for fig in figs])
+    metric_features = np.array([flatten([figut.fig_metrics(fig) for fig in figs])
                                 for figs in pixras])
 
-    overlap_features = np.array([[fgut.fig_intersection(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
-                                 for figs in pixras])
+    intersect_features = np.array([[figut.fig_intersects(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
+                                    for figs in pixras])
 
-    inner_deltas_features = np.array([flatten([fgut.fig_inner_deltas(fig) for fig in figs])
+    overlap_features = np.array([[figut.fig_overlap_area(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
+                                  for figs in pixras])
+
+    area_features = np.array([[figut.fig_area(fig) for fig in figs]
                                for figs in pixras])
 
-    distance_features = np.array([flatten([fgut.fig_distance(figs[i], figs[i + 1])
+    contain_features = np.array([flatten([(figut.fig_contains(figs[i], figs[i + 1]),
+                                           figut.fig_contains(figs[i + 1], figs[i]))
                                            for i in range(len(figs) - 1)])
                                   for figs in pixras])
 
-    inner_angles_features = np.array([flatten([fgut.fig_inner_angles(fig) for fig in figs])
+    inner_deltas_features = np.array([flatten([figut.fig_inner_deltas(fig) for fig in figs])
+                               for figs in pixras])
+
+    distance_features = np.array([[figut.fig_distance(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
+                                  for figs in pixras])
+
+    inner_angles_features = np.array([flatten([figut.fig_inner_angles(fig) for fig in figs])
                                      for figs in pixras])
 
-    # vectors = overlap_features
-    vectors = np.hstack((# inner_deltas_features,
-                         metric_features *.05,
+    vectors = np.hstack((inner_deltas_features,
+                         # metric_features,
                          # coordinate_features,
-                         overlap_features,
-                         # inner_angles_features,
+                         intersect_features,
+                         contain_features,
+                         # overlap_features,
+                         area_features,
+                         inner_angles_features,
                          distance_features
     ))
 

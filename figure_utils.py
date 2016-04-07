@@ -2,11 +2,13 @@ from operator import itemgetter
 from math import sqrt
 import itertools
 import numpy as np
+from shapely.geometry import Polygon
 from shapely.geometry.polygon import LinearRing
 
 
 def flatten(lst):
     return list(itertools.chain.from_iterable(lst))
+
 
 # def ellipse_to_polygon(fig, angle=0, n=4):
 #     min_x, min_y, max_x, max_y = fig_rect(fig)
@@ -43,14 +45,45 @@ def ellipse_to_polygon(fig, n=10):
     return p
 
 
-def fig_intersection(fig1, fig2) -> float:
-    e1 = LinearRing(fig1)
-    e2 = LinearRing(fig2)
-    mp = e1.intersection(e2)
-    print("intersection", mp, mp.area)
-    # x = [p.x for p in mp]
-    # y = [p.y for p in mp]
-    return 1 if len(mp) > 0 else 0 #mp.area
+def fig_intersects(fig1, fig2) -> float:
+    p1 = LinearRing(fig1)
+    p2 = LinearRing(fig2)
+    return 1 if p1.crosses(p2) else 0
+
+
+def fig_contains(fig1, fig2) -> float:
+    b1 = LinearRing(fig1)
+    b2 = LinearRing(fig2)
+    try:
+        p1 = Polygon(b1)
+        p2 = Polygon(b2)
+        result = p1.contains(p2)
+    except:
+        result = False
+    return 1 if result else 0
+
+
+def fig_overlap_area(fig1, fig2) -> float:
+    p1 = Polygon(LinearRing(fig1))
+    p2 = Polygon(LinearRing(fig2))
+    try:
+        area = p1.intersection(p2).area
+    except:
+        area = 0.0
+    return area
+
+
+def fig_area(fig) -> float:
+    b = LinearRing(fig)
+    try:
+        p = Polygon(b)
+        area = p.area
+    except:
+        min_x, min_y, max_x, max_y = fig_rect(fig)
+        size_x = max_x - min_x
+        size_y = max_y - min_y
+        area = size_x * size_y
+    return area
 
 
 def fig_rect(fig) -> (float, float, float, float):
@@ -69,12 +102,12 @@ def fig_center(fig: list) -> (float, float):
     return center_x, center_y
 
 
-def fig_distance(fig1, fig2) -> (float, float):
+def fig_distance(fig1, fig2) -> float:
     center1 = fig_center(fig1)
     center2 = fig_center(fig2)
     dx = center1[0] - center2[0]
     dy = center1[1] - center2[1]
-    return sqrt(dx**2 + dy**2), 0.0
+    return sqrt(dx**2 + dy**2)
 
 
 # figure: [(x, y), (x, y), ...]
@@ -109,12 +142,3 @@ def fig_metrics(fig) -> (float, float, float, float):
     center_y = min_y + size_y/2
     return size_x, size_y, center_x, center_y
 
-
-def fig_overlap(fig1, fig2) -> (float, float):
-    min_x1, min_y1, max_x1, max_y1 = fig_rect(fig1)
-    min_x2, min_y2, max_x2, max_y2 = fig_rect(fig2)
-    w1 = abs(max_x1 - min_x1)
-    h1 = abs(max_y1 - min_y1)
-    x_overlap = w1 - abs(min_x1 - min_x2)
-    y_overlap = h1 - abs(min_y1 - min_y2)
-    return x_overlap, y_overlap
