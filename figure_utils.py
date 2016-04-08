@@ -3,12 +3,11 @@ from math import sqrt
 import itertools
 import numpy as np
 from shapely.geometry import Polygon
-from shapely.geometry.polygon import LinearRing
+from shapely.geometry.polygon import LinearRing, LineString
 
 
 def flatten(lst):
     return list(itertools.chain.from_iterable(lst))
-
 
 # def ellipse_to_polygon(fig, angle=0, n=4):
 #     min_x, min_y, max_x, max_y = fig_rect(fig)
@@ -30,6 +29,7 @@ def flatten(lst):
 #     return p
 
 
+# figure: [(x, y), (x, y), ...]
 def ellipse_to_polygon(fig, n=10):
     min_x, min_y, max_x, max_y = fig_rect(fig)
     rx = (max_x - min_x)/2
@@ -45,16 +45,18 @@ def ellipse_to_polygon(fig, n=10):
     return p
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_intersects(fig1, fig2) -> float:
-    p1 = LinearRing(fig1)
-    p2 = LinearRing(fig2)
+    p1 = LineString(fig1)
+    p2 = LineString(fig2)
     return 1 if p1.crosses(p2) else 0
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_contains(fig1, fig2) -> float:
-    b1 = LinearRing(fig1)
-    b2 = LinearRing(fig2)
     try:
+        b1 = LinearRing(fig1)
+        b2 = LinearRing(fig2)
         p1 = Polygon(b1)
         p2 = Polygon(b2)
         result = p1.contains(p2)
@@ -63,19 +65,21 @@ def fig_contains(fig1, fig2) -> float:
     return 1 if result else 0
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_overlap_area(fig1, fig2) -> float:
-    p1 = Polygon(LinearRing(fig1))
-    p2 = Polygon(LinearRing(fig2))
     try:
+        p1 = Polygon(LinearRing(fig1))
+        p2 = Polygon(LinearRing(fig2))
         area = p1.intersection(p2).area
     except:
         area = 0.0
     return area
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_area(fig) -> float:
-    b = LinearRing(fig)
     try:
+        b = LinearRing(fig)
         p = Polygon(b)
         area = p.area
     except:
@@ -86,6 +90,7 @@ def fig_area(fig) -> float:
     return area
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_rect(fig) -> (float, float, float, float):
     min_x = min(fig, key=itemgetter(0))[0]
     min_y = min(fig, key=itemgetter(1))[1]
@@ -102,6 +107,7 @@ def fig_center(fig: list) -> (float, float):
     return center_x, center_y
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_distance(fig1, fig2) -> float:
     center1 = fig_center(fig1)
     center2 = fig_center(fig2)
@@ -134,6 +140,7 @@ def fig_inner_angles(fig) -> list:
     return angles
 
 
+# figure: [(x, y), (x, y), ...]
 def fig_metrics(fig) -> (float, float, float, float):
     min_x, min_y, max_x, max_y = fig_rect(fig)
     size_x = max_x - min_x
@@ -141,4 +148,20 @@ def fig_metrics(fig) -> (float, float, float, float):
     center_x = min_x + size_x/2
     center_y = min_y + size_y/2
     return size_x, size_y, center_x, center_y
+
+
+def pix_density(figures, size=3) -> list:
+    dx = dy = 1/size
+    cells = []
+    for x in range(size):
+        for y in range(size):
+            cells.append([x*dx, y*dy, x*dx + dx, y*dx + dy])
+    density = [0]*len(cells)
+    for vx, vy in flatten(figures):
+        for i, (x0, y0, x1, y1) in enumerate(cells):
+            if (x0 <= vx < x1) and (y0 <= vy < y1):
+                density[i] += 1
+    return density
+
+
 

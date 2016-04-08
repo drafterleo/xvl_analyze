@@ -227,8 +227,8 @@ if __name__ ==  "__main__":
     # train()
     # test()
     # cluster_color_matrices()
-    # cluster_figures("fig_cluster_src.xvl", "fig_cluster_res.xvl", n_clusters=4)
-    cluster_figures("sense.xvl", "sense_res.xvl", n_clusters=80)
+    cluster_figures("fig_cluster_src.xvl", "fig_cluster_res.xvl", n_clusters=4)
+    # cluster_figures("sense.xvl", "sense_res.xvl", n_clusters=80)
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)

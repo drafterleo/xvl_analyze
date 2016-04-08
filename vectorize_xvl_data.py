@@ -159,14 +159,18 @@ def make_xvl_figures_vec_data(xvl_data) -> dict:
     inner_angles_features = np.array([flatten([figut.fig_inner_angles(fig) for fig in figs])
                                      for figs in pixras])
 
-    vectors = np.hstack((inner_deltas_features,
+    dencity_features = np.array([figut.pix_density(figs, size=2)
+                                for figs in pixras])
+
+    vectors = np.hstack((# inner_deltas_features,
                          # metric_features,
                          # coordinate_features,
-                         intersect_features,
-                         contain_features,
+                         # intersect_features,
+                         # contain_features,
                          # overlap_features,
+                         dencity_features,
                          area_features,
-                         inner_angles_features,
+                         # inner_angles_features,
                          distance_features
     ))
 
