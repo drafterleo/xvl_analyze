@@ -21,7 +21,6 @@ import vectorize_xvl_data as xvlvec
 from color_palette import color_names
 
 
-
 def train_learn_predict(xvl_vec_data, use_PCA=False):
     vectors = xvl_vec_data['vectors']
     labels = xvl_vec_data['labels']
@@ -171,14 +170,14 @@ def test():
     print("predicted:")
     print(res_labels)
     compare_labels(my_labels, res_labels)
-    xvl.set_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
+    xvl.write_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
 
     tst_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_tst.xvl")
     mean_labels = mean_rgb_labels(tst_xvl_data)
     print("mean:")
     print(mean_labels)
     compare_labels(my_labels, mean_labels)
-    xvl.set_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
+    xvl.write_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
 
 
 def cluster_color_matrices():
@@ -194,20 +193,13 @@ def cluster_color_matrices():
     idx = kmeans_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
-    xvl.set_labels_to_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
+    xvl.write_labels_to_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
 
 
 # http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
-def cluster_figures(src_file, res_file, n_clusters=10):
-    xvl_data = xvl.parse_xvl_figures_file(src_file)
-    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data)
-
-    vectors = np.array(xvl_vec_data['vectors'])
-    print(len(vectors))
-    print(vectors)
-
+def cluster_figures(vectors, n_clusters=10):
     # estimate bandwidth for mean shift
-    bandwidth = cluster.estimate_bandwidth(vectors, quantile=0.3)
+    # bandwidth = cluster.estimate_bandwidth(vectors, quantile=0.3)
 
     cluster_model = cluster.KMeans(n_clusters=n_clusters)
     # cluster_model = cluster.MeanShift()
@@ -215,20 +207,54 @@ def cluster_figures(src_file, res_file, n_clusters=10):
     #                                           eigen_solver='arpack',
     #                                           affinity="nearest_neighbors")
     # cluster_model =  cluster.AgglomerativeClustering(n_clusters=n_clusters, linkage='ward')
+
     idx = cluster_model.fit_predict(vectors)
-
     labels = [str(i) for i in idx]
-    xvl.set_labels_to_xvl_file(src_file, res_file, labels)
+    return labels
 
-    # show_pca_transform(vectors, np.zeros(len(vectors), dtype=np.int))
-    show_pca_transform(vectors, idx)
 
-if __name__ ==  "__main__":
+def tst_figure_inner_features():
+    src_file = "tst_inner_cross.xvl"
+    res_file = "res_inner_cross.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(src_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
+                                                    use_inner_deltas_feature=True,
+                                                    use_inner_angles_feature=True,
+                                                    use_inner_cross_feature=True,
+                                                    use_area_feature=True)
+    vectors = np.array(xvl_vec_data['vectors'])
+    print(len(vectors))
+    print(vectors)
+    labels = cluster_figures(vectors, n_clusters=10)
+    xvl.write_labels_to_xvl_file(src_file, res_file, labels)
+
+    show_pca_transform(vectors, labels)
+
+
+def tst_4fig_types():
+    src_file = "tst_4fig_types.xvl"
+    res_file = "res_4fig_types.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(src_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
+                                                    use_distance_feature=True,
+                                                    use_overlap_feature=True,
+                                                    use_intersect_feature=True)
+    vectors = np.array(xvl_vec_data['vectors'])
+    print(len(vectors))
+    print(vectors)
+    labels = cluster_figures(vectors, n_clusters=4)
+    xvl.write_labels_to_xvl_file(src_file, res_file, labels)
+
+    show_pca_transform(vectors, labels)
+
+
+if __name__ == "__main__":
     # train()
     # test()
     # cluster_color_matrices()
-    cluster_figures("fig_cluster_src.xvl", "fig_cluster_res.xvl", n_clusters=4)
     # cluster_figures("sense.xvl", "sense_res.xvl", n_clusters=80)
+    tst_figure_inner_features()
+    # tst_4fig_types()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)

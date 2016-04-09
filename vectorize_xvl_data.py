@@ -118,7 +118,19 @@ def make_xvl_color_vec_data(xvl_data, palette=[]) -> dict:
 
 
 # xvl_data: [(label, pixra[figure1, figure2, ...], fig_types), ...]
-def make_xvl_figures_vec_data(xvl_data) -> dict:
+def make_xvl_figures_vec_data(xvl_data,
+                              use_distance_feature=True,
+                              use_intersect_feature=False,
+                              use_overlap_feature=False,
+                              use_area_feature=False,
+                              use_contain_feature=False,
+                              use_inner_deltas_feature=False,
+                              use_inner_angles_feature=False,
+                              use_inner_cross_feature=False,
+                              use_density_feature=False,
+                              density_matrix_size=3,
+                              use_coordinate_feature=False,
+                              use_metric_feature=False) -> dict:
     labels = [item[0] for item in xvl_data]
     idx_label_map = dict(enumerate(list(set(labels))))
 
@@ -127,52 +139,73 @@ def make_xvl_figures_vec_data(xvl_data) -> dict:
     pixras = [  [figut.ellipse_to_polygon(item[1][i]) if item[2][i] == 'CEllipseFigure' else item[1][i]
                  for i in range(len(item[1]))]
               for item in xvl_data]
-
     fig_types = [item[2] for item in xvl_data]
 
-    coordinate_features = np.array([flatten([flatten(fig) for fig in figs])
-                                    for figs in pixras])
-    # sizes and centers
-    metric_features = np.array([flatten([figut.fig_metrics(fig) for fig in figs])
-                                for figs in pixras])
+    features = []
 
-    intersect_features = np.array([[figut.fig_intersects(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
-                                    for figs in pixras])
-
-    overlap_features = np.array([[figut.fig_overlap_area(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
-                                  for figs in pixras])
-
-    area_features = np.array([[figut.fig_area(fig) for fig in figs]
-                               for figs in pixras])
-
-    contain_features = np.array([flatten([(figut.fig_contains(figs[i], figs[i + 1]),
-                                           figut.fig_contains(figs[i + 1], figs[i]))
-                                           for i in range(len(figs) - 1)])
-                                  for figs in pixras])
-
-    inner_deltas_features = np.array([flatten([figut.fig_inner_deltas(fig) for fig in figs])
-                               for figs in pixras])
-
-    distance_features = np.array([[figut.fig_distance(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
-                                  for figs in pixras])
-
-    inner_angles_features = np.array([flatten([figut.fig_inner_angles(fig) for fig in figs])
+    if use_distance_feature:
+        distance_feature = np.array([[figut.fig_distance(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
                                      for figs in pixras])
+        features.append(distance_feature)
 
-    dencity_features = np.array([figut.pix_density(figs, size=2)
-                                for figs in pixras])
+    if use_intersect_feature:
+        intersect_feature = np.array([[figut.fig_intersects(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
+                                      for figs in pixras])
+        features.append(intersect_feature)
 
-    vectors = np.hstack((# inner_deltas_features,
-                         # metric_features,
-                         # coordinate_features,
-                         # intersect_features,
-                         # contain_features,
-                         # overlap_features,
-                         dencity_features,
-                         area_features,
-                         # inner_angles_features,
-                         distance_features
-    ))
+    if use_overlap_feature:
+        overlap_feature = np.array([[figut.fig_overlap_area(figs[i], figs[i + 1]) for i in range(len(figs) - 1)]
+                                    for figs in pixras])
+        features.append(overlap_feature)
+
+    if use_area_feature:
+        area_feature = np.array([[figut.fig_area(fig) for fig in figs]
+                                 for figs in pixras])
+        features.append(area_feature)
+
+    if use_contain_feature:
+        contain_feature = np.array([flatten([(figut.fig_contains(figs[i], figs[i + 1]),
+                                              figut.fig_contains(figs[i + 1], figs[i]))
+                                             for i in range(len(figs) - 1)])
+                                    for figs in pixras])
+        features.append(contain_feature)
+
+    if use_inner_deltas_feature:
+        inner_deltas_feature = np.array([flatten([figut.fig_inner_deltas(fig) for fig in figs])
+                                          for figs in pixras])
+        features.append(inner_deltas_feature)
+
+    if use_inner_angles_feature:
+        inner_angles_feature = np.array([flatten([figut.fig_inner_angles(fig) for fig in figs])
+                                         for figs in pixras])
+        features.append(inner_angles_feature)
+
+    if use_inner_cross_feature:
+        inner_cross_feature = np.array([[figut.fig_inner_cross_count(fig) for fig in figs]
+                                        for figs in pixras])
+        features.append(inner_cross_feature)
+
+    if use_density_feature:
+        density_feature = np.array([figut.pix_density(figs, size=density_matrix_size)
+                                    for figs in pixras])
+        features.append(density_feature)
+
+    if use_coordinate_feature:
+        coordinate_feature = np.array([flatten([flatten(fig) for fig in figs])
+                                       for figs in pixras])
+        features.append(coordinate_feature)
+
+    if use_metric_feature:  # sizes and centers
+        metric_feature = np.array([flatten([figut.fig_metrics(fig) for fig in figs])
+                                   for figs in pixras])
+        features.append(metric_feature)
+
+    if len(features) == 0:
+        vectors = np.zeros((len(pixras), 1))
+    elif len(features) == 1:
+        vectors = features[0]
+    else:
+        vectors = np.hstack(features)
 
     return {'labels_map': idx_label_map,
             'labels'    : labels,

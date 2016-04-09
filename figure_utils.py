@@ -47,9 +47,21 @@ def ellipse_to_polygon(fig, n=10):
 
 # figure: [(x, y), (x, y), ...]
 def fig_intersects(fig1, fig2) -> float:
-    p1 = LineString(fig1)
-    p2 = LineString(fig2)
-    return 1 if p1.crosses(p2) else 0
+    ls1 = LineString(fig1)
+    ls2 = LineString(fig2)
+    return 1 if ls1.intersects(ls2) else 0
+
+
+def fig_inner_cross_count(fig) -> int:
+    count = 0
+    ext_fig = fig + [fig[0]]
+    for i in range(len(ext_fig) - 1):
+        for j in range(i + 1, len(ext_fig) - 1):
+            edge_i = LineString([ext_fig[i], ext_fig[i+1]])
+            edge_j = LineString([ext_fig[j], ext_fig[j+1]])
+            if edge_i.crosses(edge_j):
+                count += 1
+    return count
 
 
 # figure: [(x, y), (x, y), ...]
@@ -153,8 +165,8 @@ def fig_metrics(fig) -> (float, float, float, float):
 def pix_density(figures, size=3) -> list:
     dx = dy = 1/size
     cells = []
-    for x in range(size):
-        for y in range(size):
+    for y in range(size):
+        for x in range(size):
             cells.append([x*dx, y*dy, x*dx + dx, y*dx + dy])
     density = [0]*len(cells)
     for vx, vy in flatten(figures):
