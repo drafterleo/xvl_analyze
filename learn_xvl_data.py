@@ -21,12 +21,12 @@ import vectorize_xvl_data as xvlvec
 from color_palette import color_names
 
 
-def train_learn_predict(xvl_vec_data, use_PCA=False):
+def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5):
     vectors = xvl_vec_data['vectors']
     labels = xvl_vec_data['labels']
 
     if use_PCA:
-        pca = decomposition.PCA(n_components=5)
+        pca = decomposition.PCA(n_components=PCA_components)
         pca.fit(vectors, labels)
         vectors = pca.transform(vectors)
 
@@ -42,12 +42,12 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     Y_tst = labels[-tst_count:]
 
     classifier = GaussianNB()
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.2)
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='rbf', C=0.05)
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
     # classifier = LogisticRegression()
     # classifier = DecisionTreeClassifier()
-    # classifier = RandomForestClassifier(n_estimators=200,
+    # classifier = RandomForestClassifier(n_estimators=350,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
     #                                     random_state=None)
@@ -57,8 +57,8 @@ def train_learn_predict(xvl_vec_data, use_PCA=False):
     print(Y_tst)
     print(classifier.fit(X, Y).score(X_tst, Y_tst))
 
-    X_pca = show_pca_transform(X, Y)
-    show_2D_projections(X_pca, Y)
+    # X_pca = show_pca_transform(X, Y)
+    # show_2D_projections(X_pca, Y)
 
 
 def test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False):
@@ -222,9 +222,7 @@ def tst_figure_inner_features():
                                                     use_inner_angles_feature=True,
                                                     use_inner_cross_feature=True,
                                                     use_area_feature=True)
-    vectors = np.array(xvl_vec_data['vectors'])
-    print(len(vectors))
-    print(vectors)
+    vectors = xvl_vec_data['vectors']
     labels = cluster_figures(vectors, n_clusters=10)
     xvl.write_labels_to_xvl_file(src_file, res_file, labels)
 
@@ -239,22 +237,43 @@ def tst_4fig_types():
                                                     use_distance_feature=True,
                                                     use_overlap_feature=True,
                                                     use_intersect_feature=True)
-    vectors = np.array(xvl_vec_data['vectors'])
-    print(len(vectors))
-    print(vectors)
+    vectors = xvl_vec_data['vectors']
     labels = cluster_figures(vectors, n_clusters=4)
     xvl.write_labels_to_xvl_file(src_file, res_file, labels)
 
     show_pca_transform(vectors, labels)
 
 
+def os_figures_learn():
+    src_file = "os.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(src_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
+                                                    use_distance_feature=True,
+                                                    use_overlap_feature=True,
+                                                    use_intersect_feature=True,
+                                                    # use_area_feature=True,
+                                                    use_contain_feature=True,
+                                                    use_inner_deltas_feature=True,
+                                                    use_inner_angles_feature=True,
+                                                    use_inner_cross_feature=True,
+                                                    use_coordinate_feature=True,
+                                                    use_metric_feature=True,
+                                                    use_density_feature=True,
+                                                    density_matrix_size=3)
+    train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=10)
+
+    map_label = dict([(lbl, idx) for idx, lbl in xvl_vec_data['labels_map'].items()])
+    idx_labels = [map_label[lbl] for lbl in xvl_vec_data['labels']]
+    show_pca_transform(xvl_vec_data['vectors'], idx_labels)
+
 if __name__ == "__main__":
     # train()
     # test()
     # cluster_color_matrices()
     # cluster_figures("sense.xvl", "sense_res.xvl", n_clusters=80)
-    tst_figure_inner_features()
+    # tst_figure_inner_features()
     # tst_4fig_types()
+    os_figures_learn()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)

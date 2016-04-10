@@ -66,35 +66,36 @@ def fig_inner_cross_count(fig) -> int:
 
 # figure: [(x, y), (x, y), ...]
 def fig_contains(fig1, fig2) -> float:
-    try:
-        b1 = LinearRing(fig1)
-        b2 = LinearRing(fig2)
-        p1 = Polygon(b1)
-        p2 = Polygon(b2)
+    ls1 = LineString(fig1)
+    ls2 = LineString(fig2)
+    if ls1.is_ring and ls2.is_ring:
+        p1 = Polygon(LinearRing(fig1))
+        p2 = Polygon(LinearRing(fig2))
         result = p1.contains(p2)
-    except:
+    else:
         result = False
     return 1 if result else 0
 
 
 # figure: [(x, y), (x, y), ...]
 def fig_overlap_area(fig1, fig2) -> float:
-    try:
+    ls1 = LineString(fig1)
+    ls2 = LineString(fig2)
+    if ls1.is_ring and ls2.is_ring:
         p1 = Polygon(LinearRing(fig1))
         p2 = Polygon(LinearRing(fig2))
         area = p1.intersection(p2).area
-    except:
+    else:
         area = 0.0
     return area
 
 
 # figure: [(x, y), (x, y), ...]
 def fig_area(fig) -> float:
-    try:
-        b = LinearRing(fig)
-        p = Polygon(b)
+    if LineString(fig).is_ring:
+        p = Polygon(LinearRing(fig))
         area = p.area
-    except:
+    else:
         min_x, min_y, max_x, max_y = fig_rect(fig)
         size_x = max_x - min_x
         size_y = max_y - min_y
