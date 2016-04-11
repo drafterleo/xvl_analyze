@@ -52,7 +52,7 @@ def vectorize_xvl_color_data(xvl_data, palette=[]) -> (list, list):
     idx_label_map = dict(enumerate(list(set(xvl.labels_of_xvl_data(xvl_data)))))
     label_idx_map = dict([(label, index) for index, label in idx_label_map.items()])
     vec_data = [(label_idx_map[label],
-                 flatten([cmaps.hex2rgb(color) for color in vector]))  # RGB's to flat list
+                 flatten([cmaps.hex2rgb(color) for color in vector]))                 # RGB's to flat list
                 for label, vector in data]
     return vec_data, idx_label_map
 

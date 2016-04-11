@@ -4,6 +4,7 @@ import itertools
 import numpy as np
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import LinearRing, LineString
+from shapely.ops import polygonize
 
 
 def flatten(lst):
@@ -62,20 +63,6 @@ def fig_inner_cross_count(fig) -> int:
             if edge_i.crosses(edge_j):
                 count += 1
     return count
-
-
-def decompose_figure(fig):
-    ext_fig = fig + [fig[0]]
-    cross_fig =  list(ext_fig) # copy ext_fig
-    polygons = []
-    for i in range(len(ext_fig) - 1):
-        for j in range(i + 1, len(ext_fig) - 1):
-            edge_i = LineString([ext_fig[i], ext_fig[i+1]])
-            edge_j = LineString([ext_fig[j], ext_fig[j+1]])
-            if edge_i.crosses(edge_j):
-                ip = edge_i.intersection(edge_j)
-                px = ip[0].x
-                py = ip[0].y
 
 
 # figure: [(x, y), (x, y), ...]
@@ -191,4 +178,33 @@ def pix_density(figures, size=3) -> list:
     return density
 
 
+def polygonize_figure(fig):
+    ext_fig = fig + [fig[0]]
+    cross_fig =  list(ext_fig) # copy ext_fig
+    polygons = []
+    for i in range(len(ext_fig) - 1):
+        for j in range(i + 1, len(ext_fig) - 1):
+            edge_i = LineString([ext_fig[i], ext_fig[i+1]])
+            edge_j = LineString([ext_fig[j], ext_fig[j+1]])
+            if edge_i.crosses(edge_j):
+                ip = edge_i.intersection(edge_j)
+                px = ip[0].x
+                py = ip[0].y
 
+
+def test():
+    from pprint import pprint
+    lines = (((0, 0), (4, 4)),
+             ((4, 4), (0, 4)),
+             ((0, 4), (4, 0)),
+             ((4, 0), (0, 0)),
+             ((0, 0), (2, 2)),
+             ((4, 4), (2, 2)),
+             ((0, 4), (2, 2)),
+             ((4, 0), (2, 2))
+             )
+    pp = polygonize(lines)
+    print(list(pp))
+
+if __name__ == "__main__":
+    test()
