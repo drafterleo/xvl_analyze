@@ -64,6 +64,20 @@ def fig_inner_cross_count(fig) -> int:
     return count
 
 
+def decompose_figure(fig):
+    ext_fig = fig + [fig[0]]
+    cross_fig =  list(ext_fig) # copy ext_fig
+    polygons = []
+    for i in range(len(ext_fig) - 1):
+        for j in range(i + 1, len(ext_fig) - 1):
+            edge_i = LineString([ext_fig[i], ext_fig[i+1]])
+            edge_j = LineString([ext_fig[j], ext_fig[j+1]])
+            if edge_i.crosses(edge_j):
+                ip = edge_i.intersection(edge_j)
+                px = ip[0].x
+                py = ip[0].y
+
+
 # figure: [(x, y), (x, y), ...]
 def fig_contains(fig1, fig2) -> float:
     ls1 = LineString(fig1)

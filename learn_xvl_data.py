@@ -7,6 +7,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import  LogisticRegression
+from sklearn import cross_validation
+from sklearn import preprocessing
 
 from sklearn import cluster
 
@@ -21,9 +23,11 @@ import vectorize_xvl_data as xvlvec
 from color_palette import color_names
 
 
-def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5):
+def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5, use_cross_validation=False):
     vectors = xvl_vec_data['vectors']
     labels = xvl_vec_data['labels']
+
+    # vectors = preprocessing.scale(vectors)
 
     if use_PCA:
         pca = decomposition.PCA(n_components=PCA_components)
@@ -33,19 +37,20 @@ def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5):
     print(xvl_vec_data['labels_map'])
     print(vectors[2:5])
 
-    tst_count = 50
+    if use_cross_validation:
+         X, X_tst, Y, Y_tst = cross_validation.train_test_split(vectors, labels, test_size=0.2)
+    else:
+        tst_count = 40
+        X = vectors[:-tst_count]
+        Y = labels[:-tst_count]
+        X_tst = vectors[-tst_count:]
+        Y_tst = labels[-tst_count:]
 
-    X = vectors[:-tst_count]
-    Y = labels[:-tst_count]
-
-    X_tst = vectors[-tst_count:]
-    Y_tst = labels[-tst_count:]
-
-    classifier = GaussianNB()
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='rbf', C=0.05)
+    # classifier = GaussianNB()
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.5)
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
-    # classifier = LogisticRegression()
+    classifier = LogisticRegression()
     # classifier = DecisionTreeClassifier()
     # classifier = RandomForestClassifier(n_estimators=350,
     #                                     warm_start=True, oob_score=True,
@@ -260,7 +265,10 @@ def os_figures_learn():
                                                     use_metric_feature=True,
                                                     use_density_feature=True,
                                                     density_matrix_size=3)
-    train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=10)
+
+    train_learn_predict(xvl_vec_data,
+                        use_PCA=False, PCA_components=10,
+                        use_cross_validation=True)
 
     map_label = dict([(lbl, idx) for idx, lbl in xvl_vec_data['labels_map'].items()])
     idx_labels = [map_label[lbl] for lbl in xvl_vec_data['labels']]
