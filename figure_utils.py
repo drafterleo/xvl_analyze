@@ -180,16 +180,18 @@ def pix_density(figures, size=3) -> list:
 
 def polygonize_figure(fig):
     ext_fig = fig + [fig[0]]
-    cross_fig =  list(ext_fig) # copy ext_fig
-    polygons = []
+    lines = []
     for i in range(len(ext_fig) - 1):
+        lines.append((ext_fig[i], ext_fig[i+1]))
         for j in range(i + 1, len(ext_fig) - 1):
             edge_i = LineString([ext_fig[i], ext_fig[i+1]])
             edge_j = LineString([ext_fig[j], ext_fig[j+1]])
             if edge_i.crosses(edge_j):
                 ip = edge_i.intersection(edge_j)
-                px = ip[0].x
-                py = ip[0].y
+                px, py = ip[0].coors
+                lines.append()
+
+
 
 
 def test():
@@ -204,7 +206,9 @@ def test():
              ((4, 0), (2, 2))
              )
     pp = polygonize(lines)
-    print(list(pp))
+    pprint(list(pp))
+    ls = LineString([(0, 0), (1, 1), (0, 1)])
+
 
 if __name__ == "__main__":
     test()
