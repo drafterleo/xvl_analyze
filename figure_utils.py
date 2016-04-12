@@ -5,6 +5,7 @@ import numpy as np
 from shapely.geometry import Polygon
 from shapely.geometry.polygon import LinearRing, LineString
 from shapely.ops import polygonize
+from pprint import pprint
 
 
 def flatten(lst):
@@ -178,36 +179,86 @@ def pix_density(figures, size=3) -> list:
     return density
 
 
-def polygonize_figure(fig):
+# fig: [(x, y), (x, y), ...]
+def make_point_link_data(fig):
+    n = len(fig)
+    links = dict([(i, [(i + 1) % n, (i - n - 1)%n]) for i in range(n)])
+    cross_points = []
+    cross_lines = []
+    cp_idx = n
     ext_fig = fig + [fig[0]]
-    lines = []
     for i in range(len(ext_fig) - 1):
-        lines.append((ext_fig[i], ext_fig[i+1]))
         for j in range(i + 1, len(ext_fig) - 1):
-            edge_i = LineString([ext_fig[i], ext_fig[i+1]])
-            edge_j = LineString([ext_fig[j], ext_fig[j+1]])
+            edge_i = LineString([ext_fig[i], ext_fig[i + 1]])
+            edge_j = LineString([ext_fig[j], ext_fig[j + 1]])
             if edge_i.crosses(edge_j):
                 ip = edge_i.intersection(edge_j)
-                px, py = ip[0].coors
-                lines.append()
+                cross_points.append((ip.x, ip.y))
+                cross_lines.append({i, i+1})
+                cross_lines.append({j, j+1})
+                links[cp_idx] = [i, i+1, j, j+1]
+                links[i].append(cp_idx)
+                links[i+1].append(cp_idx)
+                links[j].append(cp_idx)
+                links[j+1].append(cp_idx)
+                cp_idx += 1
+    for i in range(n, cp_idx - 1):
+        for j in range(i + 1, cp_idx):
+            if len(set(links[i]) & set(links[j])) >= 2:
+                links[i].append(j)
+                links[j].append(i)
+    points = fig + cross_points
+    return points, links, cross_lines
 
 
+# fig: [(x, y), (x, y), ...]
+def polygonize_figure(fig):
+    points, links, cross_lines = make_point_link_data(fig)
+    print(points)
+    print(links)
+    cycles = []
+    max_depth = len(points)
+
+    def find_cycles(base_vx, path, depth):
+        if depth < max_depth:
+            curr_vx = path[-1]
+            for vx in links[curr_vx]:
+                if depth > 1 and vx == base_vx and {curr_vx, vx} not in cross_lines:
+                    path.append(vx)
+                    point_list = [points[idx] for idx in path]
+                    ls = LineString(point_list)
+                    if ls.is_simple:
+                        cycles.append(path)
+                        break
+                elif vx not in path and {curr_vx, vx} not in cross_lines:
+                    find_cycles(base_vx, path + [vx], depth + 1)
+
+    for i in range(len(points)):
+        find_cycles(i, [i], 0)
+
+    cycle_sets = [set(c) for c in cycles]
+    cycles_pack = [cycles[i] for i in range(len(cycles))
+                   if set(cycles[i]) not in cycle_sets[i+1:]]
+    polygons = [[points[idx] for idx in cycle] for cycle in cycles_pack]
+    return polygons
 
 
 def test():
-    from pprint import pprint
-    lines = (((0, 0), (4, 4)),
-             ((4, 4), (0, 4)),
-             ((0, 4), (4, 0)),
-             ((4, 0), (0, 0)),
-             ((0, 0), (2, 2)),
-             ((4, 4), (2, 2)),
-             ((0, 4), (2, 2)),
-             ((4, 0), (2, 2))
-             )
-    pp = polygonize(lines)
-    pprint(list(pp))
-    ls = LineString([(0, 0), (1, 1), (0, 1)])
+    polygons = polygonize_figure([(4., 4.), (0., 0.), (3., 0.), (0., 2.), (4., 2.)])
+    pprint(polygons)
+
+#     lines = (((0, 0), (4, 4)),
+#              ((4, 4), (0, 4)),
+#              ((0, 4), (4, 0)),
+#              ((4, 0), (0, 0)),
+#              ((0, 0), (2, 2)),
+#              ((4, 4), (2, 2)),
+#              ((0, 4), (2, 2)),
+#              ((4, 0), (2, 2)))
+#     polygons = polygonize(lines)
+#     polygons = polygonize_figure([(0.0, 0.0), (4.0, 4.0), (0.0, 4.0), (4.0, 0.0)])
+    # for polygon in polygons:
+    #     print(list(polygon.boundary.coords))
 
 
 if __name__ == "__main__":
