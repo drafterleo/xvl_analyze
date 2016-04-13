@@ -182,11 +182,12 @@ def pix_density(figures, size=3) -> list:
 # fig: [(x, y), (x, y), ...]
 def make_point_link_data(fig):
     n = len(fig)
-    links = dict([(i, [(i + 1) % n, (i - n - 1)%n]) for i in range(n)])
+    links = dict([(i, [(i + 1) % n, (i - n - 1) % n]) for i in range(n)])
     cross_points = []
-    cross_lines = []
+    crossed_lines = []
     cp_idx = n
     ext_fig = fig + [fig[0]]
+    vertex = list(range(len(fig))) + [0]
     for i in range(len(ext_fig) - 1):
         for j in range(i + 1, len(ext_fig) - 1):
             edge_i = LineString([ext_fig[i], ext_fig[i + 1]])
@@ -194,26 +195,27 @@ def make_point_link_data(fig):
             if edge_i.crosses(edge_j):
                 ip = edge_i.intersection(edge_j)
                 cross_points.append((ip.x, ip.y))
-                cross_lines.append({i, i+1})
-                cross_lines.append({j, j+1})
-                links[cp_idx] = [i, i+1, j, j+1]
-                links[i].append(cp_idx)
-                links[i+1].append(cp_idx)
-                links[j].append(cp_idx)
-                links[j+1].append(cp_idx)
+                vxs = [i, i+1, j, vertex[j+1]] # vertexes of crossed lines
+                links[cp_idx] = vxs
+                for vx in vxs:
+                    links[vx].append(cp_idx)
+                crossed_lines.append({vxs[0], vxs[1]})
+                crossed_lines.append({vxs[2], vxs[3]})
                 cp_idx += 1
+    # check if crossing points lie in the same figure segment
     for i in range(n, cp_idx - 1):
         for j in range(i + 1, cp_idx):
             if len(set(links[i]) & set(links[j])) >= 2:
                 links[i].append(j)
                 links[j].append(i)
+                # crossed_lines.append({i, j})
     points = fig + cross_points
-    return points, links, cross_lines
+    return points, links, crossed_lines
 
 
 # fig: [(x, y), (x, y), ...]
 def polygonize_figure(fig):
-    points, links, cross_lines = make_point_link_data(fig)
+    points, links, crossed_lines = make_point_link_data(fig)
     print(points)
     print(links)
     cycles = []
@@ -223,17 +225,17 @@ def polygonize_figure(fig):
         if depth < max_depth:
             curr_vx = path[-1]
             for vx in links[curr_vx]:
-                if depth > 1 and vx == base_vx and {curr_vx, vx} not in cross_lines:
-                    path.append(vx)
-                    point_list = [points[idx] for idx in path]
-                    ls = LineString(point_list)
-                    if ls.is_simple:
-                        cycles.append(path)
-                        break
-                elif vx not in path and {curr_vx, vx} not in cross_lines:
-                    find_cycles(base_vx, path + [vx], depth + 1)
+                if {curr_vx, vx} not in crossed_lines:
+                    if depth > 1 and vx == base_vx:
+                        path.append(vx)
+                        point_list = [points[idx] for idx in path]
+                        if LineString(point_list).is_simple:
+                            cycles.append(path)
+                            break
+                    elif vx not in path:
+                        find_cycles(base_vx, path + [vx], depth + 1)
 
-    for i in range(len(points)):
+    for i in range(len(fig), len(points)):
         find_cycles(i, [i], 0)
 
     cycle_sets = [set(c) for c in cycles]
@@ -244,8 +246,11 @@ def polygonize_figure(fig):
 
 
 def test():
-    polygons = polygonize_figure([(4., 4.), (0., 0.), (3., 0.), (0., 2.), (4., 2.)])
+    # polygons = polygonize_figure([(4., 4.), (0., 0.), (3., 0.), (0., 2.), (4., 2.)])
+    # polygons = polygonize_figure([(0., 0.), (3., 0.), (0., 3.), (0., 5.), (3., 5.), (3., 3.)])
+    polygons = polygonize_figure([(1., 1.), (8., 4.), (2., 5.), (6., 0.), (8., 2.), (0., 3.)])
     pprint(polygons)
+    print(len(polygons))
 
 #     lines = (((0, 0), (4, 4)),
 #              ((4, 4), (0, 4)),
