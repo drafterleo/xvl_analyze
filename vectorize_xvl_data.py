@@ -226,8 +226,23 @@ def test_figures_vectorize():
     make_xvl_figures_vec_data(xvl_data)
 
 
+def test_figure_utils():
+    from shapely.geometry import Polygon
+    from shapely.ops import cascaded_union
+
+    xvl_data = xvl.parse_xvl_figures_file("tst_fig_utils.xvl")
+    pixras = [[fig for fig in item[1]] for item in xvl_data]
+    polygons = figut.polygonize_figure(pixras[0][0])
+    pprint(polygons)
+    plist = [Polygon(p) for p in polygons]
+    u_polygon = cascaded_union(plist)
+    print(u_polygon.boundary)
+    print(u_polygon.area)
+
+
 if __name__ == "__main__":
-    test_figures_vectorize()
+    # test_figures_vectorize()
+    test_figure_utils()
 
 
 

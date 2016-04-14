@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xravlaste>
+<xravlaste version="1.0">
+    <proto>
+        <pixra type="CFiguresPixra">
+            <figure type="CPolygonFigure">
+                <anchor x="0.5" y="0.1"/>
+                <anchor x="0.84641" y="0.3"/>
+                <anchor x="0.84641" y="0.7"/>
+                <anchor x="0.5" y="0.9"/>
+                <anchor x="0.15359" y="0.7"/>
+                <anchor x="0.15359" y="0.3"/>
+            </figure>
+            <figure type="CEllipseFigure">
+                <anchor x="0.495" y="0.33"/>
+                <anchor x="0.66" y="0.495"/>
+                <anchor x="0.495" y="0.66"/>
+                <anchor x="0.33" y="0.495"/>
+            </figure>
+        </pixra>
+    </proto>
+    <item>
+        <word></word>
+        <spec></spec>
+        <pixra type="CFiguresPixra">
+            <figure type="CPolygonFigure">
+                <anchor x="0.931373" y="0.568627"/>
+                <anchor x="0.411765" y="0.22549"/>
+                <anchor x="0.921569" y="0.254902"/>
+                <anchor x="0.117647" y="0.816176"/>
+                <anchor x="0.598039" y="0.830882"/>
+                <anchor x="0.237745" y="0.455882"/>
+            </figure>
+        </pixra>
+    </item>
+    <item>
+        <word></word>
+        <spec></spec>
+        <pixra type="CFiguresPixra">
+            <figure type="CPolygonFigure">
+                <anchor x="0.473602" y="0.687635"/>
+                <anchor x="0.16882" y="0.914371"/>
+                <anchor x="0.471838" y="0.071329"/>
+                <anchor x="0.868896" y="0.889373"/>
+                <anchor x="0.0846913" y="0.28448"/>
+                <anchor x="0.937052" y="0.28781"/>
+            </figure>
+        </pixra>
+    </item>
+    <item>
+        <word></word>
+        <spec></spec>
+        <pixra type="CFiguresPixra">
+            <figure type="CPolygonFigure">
+                <anchor x="0.465686" y="0.0661765"/>
+                <anchor x="0.183824" y="0.333333"/>
+                <anchor x="0.539216" y="0.742647"/>
+                <anchor x="0.127451" y="0.860294"/>
+                <anchor x="0.784314" y="0.129902"/>
+                <anchor x="0.67402" y="0.64951"/>
+            </figure>
+        </pixra>
+    </item>
+    <item>
+        <word></word>
+        <spec></spec>
+        <pixra type="CFiguresPixra">
+            <figure type="CPolygonFigure">
+                <anchor x="0.0759804" y="0.382353"/>
+                <anchor x="0.465686" y="0.281863"/>
+                <anchor x="0.0882353" y="0.796569"/>
+                <anchor x="0.882353" y="0.401961"/>
+                <anchor x="0.159314" y="0.0612745"/>
+                <anchor x="0.563725" y="0.813725"/>
+            </figure>
+        </pixra>
+    </item>
+</xravlaste>
