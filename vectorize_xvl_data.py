@@ -222,8 +222,10 @@ def test_color_vectorize():
 
 
 def test_figures_vectorize():
-    xvl_data = xvl.parse_xvl_figures_file("fig_tst.xvl")
-    make_xvl_figures_vec_data(xvl_data)
+    # xvl_data = xvl.parse_xvl_figures_file("tst_4fig_types.xvl")
+    xvl_data = xvl.parse_xvl_figures_file("sense.xvl")
+    vec_data = make_xvl_figures_vec_data(xvl_data, use_area_feature=True)
+    pprint(vec_data['vectors'])
 
 
 def test_figure_utils():
@@ -232,17 +234,23 @@ def test_figure_utils():
 
     xvl_data = xvl.parse_xvl_figures_file("tst_fig_utils.xvl")
     pixras = [[fig for fig in item[1]] for item in xvl_data]
-    polygons = figut.polygonize_figure(pixras[0][0])
-    pprint(polygons)
-    plist = [Polygon(p) for p in polygons]
-    u_polygon = cascaded_union(plist)
-    print(u_polygon.boundary)
-    print(u_polygon.area)
+    pix_idx = 0
+
+    # polygons = figut.polygonize_figure(pixras[pix_idx][0])
+    # print(pixras[pix_idx][0])
+    # pprint(polygons)
+    # plist = [Polygon(p) for p in polygons]
+    # print(len(plist))
+    # u_polygon = cascaded_union(plist)
+    # print(u_polygon.boundary)
+    # print(u_polygon.area)
+
+    print(figut.fig_contains(pixras[pix_idx][0], pixras[pix_idx][1]))
 
 
 if __name__ == "__main__":
-    # test_figures_vectorize()
-    test_figure_utils()
+    test_figures_vectorize()
+    # test_figure_utils()
 
 
 
