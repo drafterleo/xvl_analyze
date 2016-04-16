@@ -2,6 +2,7 @@ from operator import itemgetter
 from math import sqrt
 import itertools
 import numpy as np
+import shapely
 from shapely.geometry import Polygon, Point
 from shapely.geometry.polygon import LinearRing, LineString
 from shapely.ops import cascaded_union
@@ -66,57 +67,43 @@ def fig_inner_cross_count(fig) -> int:
     return count
 
 
-# figure: [(x, y), (x, y), ...]
-# def fig_contains(fig1, fig2) -> float:
-#     ls1 = LineString(fig1)
-#     ls2 = LineString(fig2)
-#     if ls1.is_simple and ls2.is_simple:
-#         p1 = Polygon(LinearRing(fig1))
-#         p2 = Polygon(LinearRing(fig2))
-#         result = p1.contains(p2)
-#     else:
-#         result = False
-#     return 1 if result else 0
-
 def fig_contains(fig1, fig2) -> float:
-    pgs1 = polygonize_figure(fig1)
-    pgs2 = polygonize_figure(fig2)
-    if len(pgs1) > 0 and len(pgs2) > 0:
-        plist1 = [Polygon(p) for p in pgs1]
-        plist2 = [Polygon(p) for p in pgs2]
+    pgz1 = polygonize_figure(fig1)
+    pgz2 = polygonize_figure(fig2)
+    if len(pgz1) > 0 and len(pgz2) > 0:
+        plist1 = [Polygon(p) for p in pgz1]
+        plist2 = [Polygon(p) for p in pgz2]
         u_polygon1 = cascaded_union(plist1)
         u_polygon2 = cascaded_union(plist2)
-        print(u_polygon1.boundary)
-        print(u_polygon2.boundary)
         if u_polygon1.contains(u_polygon2):
             return True
     return False
 
 
 # figure: [(x, y), (x, y), ...]
-def fig_overlap_area(fig1, fig2) -> float:
-    ls1 = LineString(fig1)
-    ls2 = LineString(fig2)
-    if ls1.is_simple and ls2.is_simple:
-        p1 = Polygon(LinearRing(fig1))
-        p2 = Polygon(LinearRing(fig2))
-        area = p1.intersection(p2).area
+def fig_area(fig) -> float:
+    polygons = polygonize_figure(fig)
+    if len(polygons) > 0:
+        plist = [Polygon(p) for p in polygons]
+        u_polygon = cascaded_union(plist)
+        area = u_polygon.area
     else:
-        area = 0.0
+        area = 0
     return area
 
 
 # figure: [(x, y), (x, y), ...]
-def fig_area(fig) -> float:
-    ring = LinearRing(fig)
-    if ring.is_simple:
-        p = Polygon(ring)
-        area = p.area
+def fig_overlap_area(fig1, fig2) -> float:
+    pgz1 = polygonize_figure(fig1)
+    pgz2 = polygonize_figure(fig2)
+    if len(pgz1) > 0 and len(pgz2) > 0:
+        plist1 = [Polygon(p) for p in pgz1]
+        plist2 = [Polygon(p) for p in pgz2]
+        u_polygon1 = cascaded_union(plist1)
+        u_polygon2 = cascaded_union(plist2)
+        area = u_polygon1.intersection(u_polygon2).area
     else:
-        min_x, min_y, max_x, max_y = fig_rect(fig)
-        size_x = max_x - min_x
-        size_y = max_y - min_y
-        area = size_x * size_y
+        area = 0.0
     return area
 
 
@@ -180,7 +167,7 @@ def fig_metrics(fig) -> (float, float, float, float):
     return size_x, size_y, center_x, center_y
 
 
-def pix_density(figures, size=3) -> list:
+def pix_vertex_density(figures, size=3) -> list:
     dx = dy = 1/size
     cells = []
     for y in range(size):
@@ -191,6 +178,24 @@ def pix_density(figures, size=3) -> list:
         for i, (x0, y0, x1, y1) in enumerate(cells):
             if (x0 <= vx < x1) and (y0 <= vy < y1):
                 density[i] += 1
+    return density
+
+
+def pix_area_density(figures, size=3) -> list:
+    dx = dy = 1/size
+    cells = []
+    for y in range(size):
+        for x in range(size):
+            cells.append([x*dx, y*dy, x*dx + dx, y*dx + dy])
+    density = [0.]*len(cells)
+    for fig in figures:
+        pgnz = polygonize_figure(fig)
+        if len(pgnz) > 0:
+            plist = [Polygon(p) for p in pgnz]
+            fig_polygon = cascaded_union(plist)
+            for i, (x0, y0, x1, y1) in enumerate(cells):
+                cell_polygon = shapely.geometry.box(x0, y0, x1, y1)
+                density[i] += fig_polygon.intersection(cell_polygon).area
     return density
 
 
@@ -249,7 +254,6 @@ def polygonize_figure(fig):
     if len(fig) < 3 or LinearRing(fig).is_simple:
         return [fig]
     points, links, crossed_lines = make_point_link_data(fig)
-
     cycles = []
     max_depth = len(points)
 

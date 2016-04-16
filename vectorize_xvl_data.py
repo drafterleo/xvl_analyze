@@ -186,7 +186,7 @@ def make_xvl_figures_vec_data(xvl_data,
         features.append(inner_cross_feature)
 
     if use_density_feature:
-        density_feature = np.array([figut.pix_density(figs, size=density_matrix_size)
+        density_feature = np.array([figut.pix_area_density(figs, size=density_matrix_size)
                                     for figs in pixras])
         features.append(density_feature)
 
@@ -224,8 +224,15 @@ def test_color_vectorize():
 def test_figures_vectorize():
     # xvl_data = xvl.parse_xvl_figures_file("tst_4fig_types.xvl")
     xvl_data = xvl.parse_xvl_figures_file("sense.xvl")
-    vec_data = make_xvl_figures_vec_data(xvl_data, use_area_feature=True)
-    pprint(vec_data['vectors'])
+    vec_data = make_xvl_figures_vec_data(xvl_data,
+                                         use_area_feature=False,
+                                         use_distance_feature=False,
+                                         use_contain_feature=False,
+                                         use_overlap_feature=False,
+                                         use_density_feature=True,
+                                         density_matrix_size=3)
+    np.set_printoptions(suppress=True, linewidth=300, threshold=1000)
+    pprint(vec_data['vectors'][:5])
 
 
 def test_figure_utils():

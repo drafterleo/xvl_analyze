@@ -35,6 +35,7 @@ def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5, use_cross
         vectors = pca.transform(vectors)
 
     print(xvl_vec_data['labels_map'])
+    np.set_printoptions(suppress=True)
     print(vectors[2:5])
 
     if use_cross_validation:
@@ -47,7 +48,7 @@ def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5, use_cross
         Y_tst = labels[-tst_count:]
 
     # classifier = GaussianNB()
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.5)
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=1.0)
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
     classifier = LogisticRegression()
@@ -256,12 +257,12 @@ def os_figures_learn():
                                                     use_distance_feature=True,
                                                     use_overlap_feature=True,
                                                     use_intersect_feature=True,
-                                                    # use_area_feature=True,
+                                                    use_area_feature=True,
                                                     use_contain_feature=True,
                                                     use_inner_deltas_feature=True,
                                                     use_inner_angles_feature=True,
                                                     use_inner_cross_feature=True,
-                                                    use_coordinate_feature=True,
+                                                    # use_coordinate_feature=True,
                                                     use_metric_feature=True,
                                                     use_density_feature=True,
                                                     density_matrix_size=3)
@@ -270,9 +271,9 @@ def os_figures_learn():
                         use_PCA=False, PCA_components=10,
                         use_cross_validation=True)
 
-    map_label = dict([(lbl, idx) for idx, lbl in xvl_vec_data['labels_map'].items()])
-    idx_labels = [map_label[lbl] for lbl in xvl_vec_data['labels']]
-    show_pca_transform(xvl_vec_data['vectors'], idx_labels)
+    # map_label = dict([(lbl, idx) for idx, lbl in xvl_vec_data['labels_map'].items()])
+    # idx_labels = [map_label[lbl] for lbl in xvl_vec_data['labels']]
+    # show_pca_transform(xvl_vec_data['vectors'], idx_labels)
 
 if __name__ == "__main__":
     # train()
