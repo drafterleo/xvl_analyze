@@ -641,7 +641,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -781,7 +781,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>o</word>
+        <word>s</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -1141,7 +1141,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -1941,7 +1941,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>o</word>
+        <word>s</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -2321,7 +2321,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -2461,7 +2461,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -3501,7 +3501,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>o</word>
+        <word>s</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -4021,7 +4021,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -4361,7 +4361,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -4421,7 +4421,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>s</word>
+        <word>o</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -4501,7 +4501,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>o</word>
+        <word>s</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">
@@ -4741,7 +4741,7 @@ s - symbol (sign, scheme)</spec>
         </pixra>
     </item>
     <item>
-        <word>o</word>
+        <word>s</word>
         <spec></spec>
         <pixra type="CFiguresPixra">
             <figure type="CPolygonFigure">

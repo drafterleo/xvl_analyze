@@ -1,18 +1,22 @@
 import numpy as np
+from scipy import stats
 from sklearn import svm
+from sklearn import decomposition
 from sklearn import neighbors
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
-from sklearn import decomposition
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import  LogisticRegression
+from sklearn.covariance import EllipticEnvelope
+
 from sklearn import cross_validation
 from sklearn import preprocessing
 
 from sklearn import cluster
 
 import matplotlib.pyplot as plt
+import matplotlib.font_manager
 from mpl_toolkits.mplot3d import Axes3D
 
 import itertools
@@ -21,6 +25,8 @@ import parse_xvl as xvl
 import color_maps as cmaps
 import vectorize_xvl_data as xvlvec
 from color_palette import color_names
+
+from pprint import pprint
 
 
 def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5, use_cross_validation=False):
@@ -48,15 +54,15 @@ def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5, use_cross
         Y_tst = labels[-tst_count:]
 
     # classifier = GaussianNB()
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=1.0)
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=15, n_jobs=-1)
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.5)
+    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
-    classifier = LogisticRegression()
+    # classifier = LogisticRegression()
     # classifier = DecisionTreeClassifier()
-    # classifier = RandomForestClassifier(n_estimators=350,
-    #                                     warm_start=True, oob_score=True,
-    #                                     max_features=None,
-    #                                     random_state=None)
+    classifier = RandomForestClassifier(n_estimators=350,
+                                        warm_start=True, oob_score=True,
+                                        max_features=None,
+                                        random_state=None)
     classifier.fit(X, Y)
 
     print(list(classifier.predict(X_tst)))
@@ -81,7 +87,7 @@ def test_learn_predict(lrn_vec_data, tst_vec_data, use_PCA=False):
 
     # classifier = GaussianNB()
     # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
-    classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.21)
+    classifier = svm.SVC(decision_function_shape='ovo', kernel='rbf', C=2.0)
     # classifier = RandomForestClassifier(n_estimators=200,
     #                                     warm_start=True, oob_score=True,
     #                                     max_features=None,
@@ -219,7 +225,7 @@ def cluster_figures(vectors, n_clusters=10):
     return labels
 
 
-def tst_figure_inner_features():
+def cluster_figure_inner_features():
     src_file = "tst_inner_cross.xvl"
     res_file = "res_inner_cross.xvl"
     xvl_data = xvl.parse_xvl_figures_file(src_file)
@@ -235,8 +241,8 @@ def tst_figure_inner_features():
     show_pca_transform(vectors, labels)
 
 
-def tst_4fig_types():
-    src_file = "tst_4fig_types.xvl"
+def cluster_4fig_types():
+    src_file = "cluster_4fig_types.xvl"
     res_file = "res_4fig_types.xvl"
     xvl_data = xvl.parse_xvl_figures_file(src_file)
     xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
@@ -263,7 +269,7 @@ def os_figures_learn():
                                                     use_inner_angles_feature=True,
                                                     use_inner_cross_feature=True,
                                                     # use_coordinate_feature=True,
-                                                    use_metric_feature=True,
+                                                    # use_metric_feature=True,
                                                     use_density_feature=True,
                                                     density_matrix_size=3)
 
@@ -271,18 +277,116 @@ def os_figures_learn():
                         use_PCA=False, PCA_components=10,
                         use_cross_validation=True)
 
-    # map_label = dict([(lbl, idx) for idx, lbl in xvl_vec_data['labels_map'].items()])
-    # idx_labels = [map_label[lbl] for lbl in xvl_vec_data['labels']]
-    # show_pca_transform(xvl_vec_data['vectors'], idx_labels)
+    map_label = dict([(lbl, idx) for idx, lbl in xvl_vec_data['labels_map'].items()])
+    idx_labels = [map_label[lbl] for lbl in xvl_vec_data['labels']]
+    show_pca_transform(xvl_vec_data['vectors'], idx_labels)
+
+
+def figure_outliers(visualize=True):
+    src_file = "os.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(src_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
+                                                    use_distance_feature=False,
+                                                    # use_overlap_feature=True,
+                                                    # use_intersect_feature=True,
+                                                    # use_area_feature=True,
+                                                    # use_contain_feature=True,
+                                                    use_inner_deltas_feature=True,
+                                                    use_inner_angles_feature=True,
+                                                    # use_inner_cross_feature=True,
+                                                    # use_coordinate_feature=True,
+                                                    # use_metric_feature=True,
+                                                    use_density_feature=True,
+                                                    density_matrix_size=5,
+                                                    use_mosaic_rate_feature=True)
+
+    vectors = xvl_vec_data['vectors']
+    np.set_printoptions(suppress=True)
+    print(vectors)
+    X = decomposition.PCA(n_components=2).fit_transform(vectors)
+    vec_num = X.shape[0]
+
+    clf = svm.OneClassSVM(kernel="rbf")
+    OUTLIER_FRACTION = 0.01
+    # clf = EllipticEnvelope(contamination=0.461)
+    # OUTLIER_FRACTION = 0.052
+    clf.fit(X)
+
+    dist_to_border = clf.decision_function(X).ravel()
+    threshold = stats.scoreatpercentile(dist_to_border, 100 * OUTLIER_FRACTION)
+    is_inlier = dist_to_border > threshold
+
+    print(np.where(is_inlier == False))
+
+    if visualize:
+        xx, yy = np.meshgrid(np.linspace(-7, 7, 500), np.linspace(-7, 7, 500))
+        # n_inliers = int((1. - OUTLIER_FRACTION) * vec_num)
+        # n_outliers = int(OUTLIER_FRACTION * vec_num)
+        Z = clf.decision_function(np.c_[xx.ravel(), yy.ravel()])
+        Z = Z.reshape(xx.shape)
+        plt.title("Outlier detection")
+        plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), threshold, 7),
+                     cmap=plt.get_cmap('Blues'))
+        a = plt.contour(xx, yy, Z, levels=[threshold],
+                        linewidths=2, colors='red')
+        plt.contourf(xx, yy, Z, levels=[threshold, Z.max()],
+                     colors='orange')
+        b = plt.scatter(X[is_inlier == 0, 0], X[is_inlier == 0, 1], c='white')
+        c = plt.scatter(X[is_inlier == 1, 0], X[is_inlier == 1, 1], c='black')
+        plt.axis('tight')
+        plt.legend([a.collections[0], b, c],
+                   ['learned decision function', 'outliers', 'inliers'],
+                   prop=matplotlib.font_manager.FontProperties(size=11))
+        plt.xlim((-7, 7))
+        plt.ylim((-7, 7))
+        plt.show()
+
+
+def sort_figures_by_feature():
+    src_file = "os.xvl"
+    res_file = "res_os_fsort.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(src_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
+                                                    use_distance_feature=False,
+                                                    # use_overlap_feature=True,
+                                                    # use_intersect_feature=True,
+                                                    use_area_feature=True,
+                                                    # use_contain_feature=True,
+                                                    # use_inner_deltas_feature=True,
+                                                    # use_inner_angles_feature=True,
+                                                    # use_inner_cross_feature=True,
+                                                    # use_coordinate_feature=True,
+                                                    # use_metric_feature=True,
+                                                    # use_mosaic_rate_feature=True,
+                                                    # use_density_feature=True,
+                                                    density_matrix_size=5)
+
+    vectors = xvl_vec_data['vectors']
+    n_params = vectors.shape[1]
+    print(vectors[256])
+    vectors.dtype = [(str(i), np.float) for i in range(n_params)]
+    pprint(list(np.ndenumerate(vectors[:, 0])))
+    sort_indices = np.argsort(vectors[:, 0])
+    print(sort_indices)
+    labels = ['']*len(sort_indices)
+    for i in range(len(sort_indices)):
+        map_idx = sort_indices[i]
+        labels[map_idx] = "{0:0{1}d}".format(i, 3)
+    xvl.write_labels_to_xvl_file(src_file, res_file, labels)
+
 
 if __name__ == "__main__":
     # train()
     # test()
     # cluster_color_matrices()
-    # cluster_figures("sense.xvl", "sense_res.xvl", n_clusters=80)
-    # tst_figure_inner_features()
-    # tst_4fig_types()
-    os_figures_learn()
+    # cluster_figure_inner_features()
+    # cluster_4fig_types()  # cluster
+
+    # os_figures_learn()
+
+    # figure_outliers()
+
+    sort_figures_by_feature()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)

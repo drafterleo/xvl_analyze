@@ -20,6 +20,39 @@
         </pixra>
     </proto>
     <item>
+        <word>251</word>
+        <spec>o - object (thig, being)
+s - symbol (sign, scheme)</spec>
+        <pixra type="CFiguresPixra">
+            <figure type="CEllipseFigure">
+                <anchor x="0.609069" y="0.622549"/>
+                <anchor x="0.715686" y="0.341912"/>
+                <anchor x="0.609069" y="0.0612745"/>
+                <anchor x="0.502451" y="0.341912"/>
+            </figure>
+        </pixra>
+    </item>
+    <item>
+        <word>001</word>
+        <spec></spec>
+        <pixra type="CFiguresPixra">
+            <figure type="CEllipseFigure">
+                <anchor x="0.414216" y="0.698529"/>
+                <anchor x="0.460784" y="0.767157"/>
+                <anchor x="0.414216" y="0.835784"/>
+                <anchor x="0.367647" y="0.767157"/>
+            </figure>
+            <figure type="CPolygonFigure">
+                <anchor x="0.862745" y="0.794118"/>
+                <anchor x="0.289216" y="0.598039"/>
+                <anchor x="0.316176" y="0.811275"/>
+                <anchor x="0.0465686" y="0.446078"/>
+                <anchor x="0.843137" y="0.0245098"/>
+                <anchor x="0.536765" y="0.0784314"/>
+            </figure>
+        </pixra>
+    </item>
+    <item>
         <word></word>
         <spec></spec>
         <pixra type="CFiguresPixra">

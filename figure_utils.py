@@ -50,9 +50,9 @@ def ellipse_to_polygon(fig, n=10):
 
 # figure: [(x, y), (x, y), ...]
 def fig_intersects(fig1, fig2) -> float:
-    ls1 = LineString(fig1)
-    ls2 = LineString(fig2)
-    return 1 if ls1.intersects(ls2) else 0
+    lr1 = LinearRing(fig1)
+    lr2 = LinearRing(fig2)
+    return 1 if lr1.intersects(lr2) else 0
 
 
 def fig_inner_cross_count(fig) -> int:
@@ -89,22 +89,28 @@ def fig_area(fig) -> float:
         area = u_polygon.area
     else:
         area = 0
+        print(len(fig))
     return area
 
 
 # figure: [(x, y), (x, y), ...]
 def fig_overlap_area(fig1, fig2) -> float:
-    pgz1 = polygonize_figure(fig1)
-    pgz2 = polygonize_figure(fig2)
-    if len(pgz1) > 0 and len(pgz2) > 0:
-        plist1 = [Polygon(p) for p in pgz1]
-        plist2 = [Polygon(p) for p in pgz2]
+    pgzfg1 = polygonize_figure(fig1)
+    pgzfg2 = polygonize_figure(fig2)
+    if len(pgzfg1) > 0 and len(pgzfg2) > 0:
+        plist1 = [Polygon(p) for p in pgzfg1]
+        plist2 = [Polygon(p) for p in pgzfg2]
         u_polygon1 = cascaded_union(plist1)
         u_polygon2 = cascaded_union(plist2)
         area = u_polygon1.intersection(u_polygon2).area
     else:
         area = 0.0
     return area
+
+
+def fig_mosaic_rate(fig) -> float:
+    polygons = polygonize_figure(fig)
+    return len(polygons)/100
 
 
 # figure: [(x, y), (x, y), ...]
@@ -189,9 +195,9 @@ def pix_area_density(figures, size=3) -> list:
             cells.append([x*dx, y*dy, x*dx + dx, y*dx + dy])
     density = [0.]*len(cells)
     for fig in figures:
-        pgnz = polygonize_figure(fig)
-        if len(pgnz) > 0:
-            plist = [Polygon(p) for p in pgnz]
+        pgzfg = polygonize_figure(fig)
+        if len(pgzfg) > 0:
+            plist = [Polygon(p) for p in pgzfg]
             fig_polygon = cascaded_union(plist)
             for i, (x0, y0, x1, y1) in enumerate(cells):
                 cell_polygon = shapely.geometry.box(x0, y0, x1, y1)
@@ -246,27 +252,36 @@ def make_point_link_data(fig):
                 links[vxs[i]].add(vxs[i+1])
                 links[vxs[i+1]].add(vxs[i])
 
-    return points, links, crossed_lines
+    return points, links
 
 
 # fig: [(x, y), (x, y), ...]
 def polygonize_figure(fig):
     if len(fig) < 3 or LinearRing(fig).is_simple:
         return [fig]
-    points, links, crossed_lines = make_point_link_data(fig)
+    points, links = make_point_link_data(fig)
     cycles = []
     max_depth = len(points)
+
+    # def find_cycles(path, depth):
+    #     if depth < max_depth:
+    #         curr_vx = path[-1]  # last one
+    #         for vx in links[curr_vx]:
+    #             if depth > 1 and vx == path[0]:
+    #                 path.append(vx)
+    #                 cycles.append(path)
+    #                 break
+    #             elif vx not in path:
+    #                 find_cycles(path + [vx], depth + 1)
 
     def find_cycles(path, depth):
         if depth < max_depth:
             curr_vx = path[-1]  # last one
-            for vx in links[curr_vx]:
-                if {curr_vx, vx} not in crossed_lines:
-                    if depth > 1 and vx == path[0]:
-                        path.append(vx)
-                        cycles.append(path)
-                        break
-                    elif vx not in path:
+            if depth > 1 and path[0] in links[curr_vx]:
+                cycles.append(path)
+            else:
+                for vx in links[curr_vx]:
+                    if vx not in path:
                         find_cycles(path + [vx], depth + 1)
 
     for i in range(len(fig), len(points)):
@@ -286,11 +301,11 @@ def test():
     # print(links)
     # print(crossed_lines)
 
-    # polygons = polygonize_figure([(0., 0.), (3., 0.), (0., 3.), (0., 5.), (3., 5.), (3., 3.)])  # cup: 2, 10.5
-    # polygons = polygonize_figure([(4., 4.), (0., 0.), (3., 0.), (0., 2.), (4., 2.)])  # saw 2: 3, 4.6
-    # polygons = polygonize_figure([(1., 0.), (5., 0.), (0., 2.), (6., 3.), (1., 5.), (6., 6.)])  # saw 3: 4, 10.384
-    # polygons = polygonize_figure([(1., 1.), (8., 4.), (2., 5.), (6., 0.), (8., 2.), (0., 3.)])  # mill: 11, 15.472
-    polygons = polygonize_figure([(1., 0.), (7., 3.), (0., 3.), (6., 0.), (4., 5.)])  # star: 37, 11.891
+    # polygons = polygonize_figure([(0., 0.), (3., 0.), (0., 3.), (0., 5.), (3., 5.), (3., 3.)])  # cup: 2 [10.5]
+    # polygons = polygonize_figure([(4., 4.), (0., 0.), (3., 0.), (0., 2.), (4., 2.)])  # 2-saw: 3 [4.6]
+    # polygons = polygonize_figure([(1., 0.), (5., 0.), (0., 2.), (6., 3.), (1., 5.), (6., 6.)])  # 3-saw: 4 [10.384]
+    # polygons = polygonize_figure([(1., 1.), (8., 4.), (2., 5.), (6., 0.), (8., 2.), (0., 3.)])  # mill: 7 [15.472]
+    polygons = polygonize_figure([(1., 0.), (7., 3.), (0., 3.), (6., 0.), (4., 5.)])  # star: 26 [11.891]
     pprint(polygons)
     print(len(polygons))
     plist = [Polygon(p) for p in polygons]

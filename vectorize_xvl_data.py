@@ -130,7 +130,8 @@ def make_xvl_figures_vec_data(xvl_data,
                               use_density_feature=False,
                               density_matrix_size=3,
                               use_coordinate_feature=False,
-                              use_metric_feature=False) -> dict:
+                              use_metric_feature=False,
+                              use_mosaic_rate_feature=False) -> dict:
     labels = [item[0] for item in xvl_data]
     idx_label_map = dict(enumerate(list(set(labels))))
 
@@ -200,6 +201,11 @@ def make_xvl_figures_vec_data(xvl_data,
                                    for figs in pixras])
         features.append(metric_feature)
 
+    if use_mosaic_rate_feature:
+        metric_feature = np.array([[figut.fig_mosaic_rate(fig) for fig in figs]
+                                   for figs in pixras])
+        features.append(metric_feature)
+
     if len(features) == 0:
         vectors = np.zeros((len(pixras), 1))
     elif len(features) == 1:
@@ -222,7 +228,7 @@ def test_color_vectorize():
 
 
 def test_figures_vectorize():
-    # xvl_data = xvl.parse_xvl_figures_file("tst_4fig_types.xvl")
+    # xvl_data = xvl.parse_xvl_figures_file("cluster_4fig_types.xvl")
     xvl_data = xvl.parse_xvl_figures_file("sense.xvl")
     vec_data = make_xvl_figures_vec_data(xvl_data,
                                          use_area_feature=False,
@@ -252,12 +258,13 @@ def test_figure_utils():
     # print(u_polygon.boundary)
     # print(u_polygon.area)
 
-    print(figut.fig_contains(pixras[pix_idx][0], pixras[pix_idx][1]))
+    # print(figut.fig_contains(pixras[pix_idx][0], pixras[pix_idx][1]))
+    print(figut.fig_area(pixras[pix_idx][0]))
 
 
 if __name__ == "__main__":
-    test_figures_vectorize()
-    # test_figure_utils()
+    # test_figures_vectorize()
+    test_figure_utils()
 
 
 
