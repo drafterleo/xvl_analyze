@@ -54,15 +54,15 @@ def train_learn_predict(xvl_vec_data, use_PCA=False, PCA_components=5, use_cross
         Y_tst = labels[-tst_count:]
 
     # classifier = GaussianNB()
-    # classifier = svm.SVC(decision_function_shape='ovo', kernel='linear', C=2.5)
-    # classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
+    # classifier = svm.SVC(decision_function_shape='ovo', kernel='rbf', C=1.5)
+    classifier = neighbors.KNeighborsClassifier(n_neighbors=10, n_jobs=-1)
     # classifier = LinearDiscriminantAnalysis(solver='svd', store_covariance=True, n_components=100)
     # classifier = LogisticRegression()
     # classifier = DecisionTreeClassifier()
-    classifier = RandomForestClassifier(n_estimators=350,
-                                        warm_start=True, oob_score=True,
-                                        max_features=None,
-                                        random_state=None)
+    # classifier = RandomForestClassifier(n_estimators=350,
+    #                                     warm_start=True, oob_score=True,
+    #                                     max_features=None,
+    #                                     random_state=None)
     classifier.fit(X, Y)
 
     print(list(classifier.predict(X_tst)))
@@ -271,7 +271,8 @@ def os_figures_learn():
                                                     # use_coordinate_feature=True,
                                                     # use_metric_feature=True,
                                                     use_density_feature=True,
-                                                    density_matrix_size=3)
+                                                    density_matrix_size=3,
+                                                    use_mosaic_rate_feature=True)
 
     train_learn_predict(xvl_vec_data,
                         use_PCA=False, PCA_components=10,
@@ -286,10 +287,10 @@ def figure_outliers(visualize=True):
     src_file = "os.xvl"
     xvl_data = xvl.parse_xvl_figures_file(src_file)
     xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
-                                                    use_distance_feature=False,
+                                                    use_distance_feature=True,
                                                     # use_overlap_feature=True,
                                                     # use_intersect_feature=True,
-                                                    # use_area_feature=True,
+                                                    use_area_feature=True,
                                                     # use_contain_feature=True,
                                                     use_inner_deltas_feature=True,
                                                     use_inner_angles_feature=True,
@@ -297,7 +298,7 @@ def figure_outliers(visualize=True):
                                                     # use_coordinate_feature=True,
                                                     # use_metric_feature=True,
                                                     use_density_feature=True,
-                                                    density_matrix_size=5,
+                                                    density_matrix_size=3,
                                                     use_mosaic_rate_feature=True)
 
     vectors = xvl_vec_data['vectors']
@@ -382,11 +383,11 @@ if __name__ == "__main__":
     # cluster_figure_inner_features()
     # cluster_4fig_types()  # cluster
 
-    # os_figures_learn()
+    os_figures_learn()
 
     # figure_outliers()
 
-    sort_figures_by_feature()
+    # sort_figures_by_feature()
 
     # rgb_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_my.xvl")
     # mean_labels = mean_rgb_labels(rgb_xvl_data)

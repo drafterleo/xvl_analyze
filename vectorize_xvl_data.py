@@ -131,16 +131,24 @@ def make_xvl_figures_vec_data(xvl_data,
                               density_matrix_size=3,
                               use_coordinate_feature=False,
                               use_metric_feature=False,
-                              use_mosaic_rate_feature=False) -> dict:
+                              use_mosaic_rate_feature=False,
+                              sort_figures=True) -> dict:
+    # item[0] - labels
+    # item[1][i] - figures
+    # item[2][i] - figure types
+
     labels = [item[0] for item in xvl_data]
     idx_label_map = dict(enumerate(list(set(labels))))
 
-    # item[1][i] - figures
-    # item[2][i] - figure types
+
     pixras = [  [figut.ellipse_to_polygon(item[1][i]) if item[2][i] == 'CEllipseFigure' else item[1][i]
                  for i in range(len(item[1]))]
               for item in xvl_data]
     fig_types = [item[2] for item in xvl_data]
+
+    if sort_figures:
+        for figs in pixras:
+            figs.sort(key=len)
 
     features = []
 
@@ -173,7 +181,7 @@ def make_xvl_figures_vec_data(xvl_data,
 
     if use_inner_deltas_feature:
         inner_deltas_feature = np.array([flatten([figut.fig_inner_deltas(fig) for fig in figs])
-                                          for figs in pixras])
+                                         for figs in pixras])
         features.append(inner_deltas_feature)
 
     if use_inner_angles_feature:
@@ -202,9 +210,9 @@ def make_xvl_figures_vec_data(xvl_data,
         features.append(metric_feature)
 
     if use_mosaic_rate_feature:
-        metric_feature = np.array([[figut.fig_mosaic_rate(fig) for fig in figs]
-                                   for figs in pixras])
-        features.append(metric_feature)
+        mosaic_rate_feature = np.array([[figut.fig_mosaic_rate(fig) for fig in figs]
+                                        for figs in pixras])
+        features.append(mosaic_rate_feature)
 
     if len(features) == 0:
         vectors = np.zeros((len(pixras), 1))
