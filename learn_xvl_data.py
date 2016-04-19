@@ -182,14 +182,14 @@ def test():
     print("predicted:")
     print(res_labels)
     compare_labels(my_labels, res_labels)
-    xvl.write_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
+    xvl.write_labels_by_xvl_file("rgb_tst.xvl", "rgb_tst_res.xvl", res_labels)
 
     tst_xvl_data = xvl.parse_xvl_color_matrix_file("rgb_tst.xvl")
     mean_labels = mean_rgb_labels(tst_xvl_data)
     print("mean:")
     print(mean_labels)
     compare_labels(my_labels, mean_labels)
-    xvl.write_labels_to_xvl_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
+    xvl.write_labels_by_xvl_file("rgb_tst.xvl", "rgb_tst_mean.xvl", mean_labels)
 
 
 def cluster_color_matrices():
@@ -205,7 +205,7 @@ def cluster_color_matrices():
     idx = kmeans_model.fit_predict(vectors)
 
     labels = [str(i) for i in idx]
-    xvl.write_labels_to_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
+    xvl.write_labels_by_xvl_file(xvl_file, "rgb_cluster.xvl", labels)
 
 
 # http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
@@ -236,9 +236,34 @@ def cluster_figure_inner_features():
                                                     use_area_feature=True)
     vectors = xvl_vec_data['vectors']
     labels = cluster_figures(vectors, n_clusters=10)
-    xvl.write_labels_to_xvl_file(src_file, res_file, labels)
+    xvl.write_labels_by_xvl_file(src_file, res_file, labels)
 
     show_pca_transform(vectors, labels)
+
+
+def cluster_figure_sense():
+    src_file = "sense.xvl"
+    res_file = "res_sense_cluster.xvl"
+    xvl_data = xvl.parse_xvl_figures_file(src_file)
+    xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
+                                                    # use_distance_feature=True,
+                                                    # use_overlap_feature=True,
+                                                    # use_intersect_feature=True,
+                                                    # use_area_feature=True,
+                                                    # use_contain_feature=True,
+                                                    # use_inner_deltas_feature=True,
+                                                    use_inner_angles_feature=True,
+                                                    # use_inner_cross_feature=True,
+                                                    # use_mosaic_rate_feature=True,
+                                                    # use_coordinate_feature=True,
+                                                    # use_metric_feature=True,
+                                                    # use_density_feature=True,
+                                                    density_matrix_size=4)
+    vectors = xvl_vec_data['vectors']
+    labels = cluster_figures(vectors, n_clusters=100)
+    xvl.write_labels_by_xvl_file(src_file, res_file, labels)
+
+    # show_pca_transform(vectors, labels)
 
 
 def cluster_4fig_types():
@@ -251,7 +276,7 @@ def cluster_4fig_types():
                                                     use_intersect_feature=True)
     vectors = xvl_vec_data['vectors']
     labels = cluster_figures(vectors, n_clusters=4)
-    xvl.write_labels_to_xvl_file(src_file, res_file, labels)
+    xvl.write_labels_by_xvl_file(src_file, res_file, labels)
 
     show_pca_transform(vectors, labels)
 
@@ -284,17 +309,18 @@ def os_figures_learn():
 
 
 def figure_outliers(visualize=True):
-    src_file = "os.xvl"
+    src_file = "sense.xvl"
+    res_file = "res_sense_outliers.xvl"
     xvl_data = xvl.parse_xvl_figures_file(src_file)
     xvl_vec_data = xvlvec.make_xvl_figures_vec_data(xvl_data,
                                                     use_distance_feature=True,
-                                                    # use_overlap_feature=True,
-                                                    # use_intersect_feature=True,
+                                                    use_overlap_feature=True,
+                                                    use_intersect_feature=True,
                                                     use_area_feature=True,
-                                                    # use_contain_feature=True,
+                                                    use_contain_feature=True,
                                                     use_inner_deltas_feature=True,
                                                     use_inner_angles_feature=True,
-                                                    # use_inner_cross_feature=True,
+                                                    use_inner_cross_feature=True,
                                                     # use_coordinate_feature=True,
                                                     # use_metric_feature=True,
                                                     use_density_feature=True,
@@ -307,8 +333,8 @@ def figure_outliers(visualize=True):
     X = decomposition.PCA(n_components=2).fit_transform(vectors)
     vec_num = X.shape[0]
 
-    clf = svm.OneClassSVM(kernel="rbf")
-    OUTLIER_FRACTION = 0.01
+    clf = svm.OneClassSVM(kernel="rbf", gamma=6.5, nu=0.2)
+    OUTLIER_FRACTION = 0.02
     # clf = EllipticEnvelope(contamination=0.461)
     # OUTLIER_FRACTION = 0.052
     clf.fit(X)
@@ -317,7 +343,12 @@ def figure_outliers(visualize=True):
     threshold = stats.scoreatpercentile(dist_to_border, 100 * OUTLIER_FRACTION)
     is_inlier = dist_to_border > threshold
 
-    print(np.where(is_inlier == False))
+    outliers = np.where(is_inlier == False)[0]
+    print(outliers)
+
+    labels = ['0000000' if i in outliers else '' for i in range(len(vectors))]
+
+    xvl.write_labels_by_xvl_file(src_file, res_file, labels)
 
     if visualize:
         xx, yy = np.meshgrid(np.linspace(-7, 7, 500), np.linspace(-7, 7, 500))
@@ -373,17 +404,19 @@ def sort_figures_by_feature():
     for i in range(len(sort_indices)):
         map_idx = sort_indices[i]
         labels[map_idx] = "{0:0{1}d}".format(i, 3)
-    xvl.write_labels_to_xvl_file(src_file, res_file, labels)
+    xvl.write_labels_by_xvl_file(src_file, res_file, labels)
 
 
 if __name__ == "__main__":
     # train()
     # test()
+
     # cluster_color_matrices()
+    cluster_figure_sense()
     # cluster_figure_inner_features()
     # cluster_4fig_types()  # cluster
 
-    os_figures_learn()
+    # os_figures_learn()
 
     # figure_outliers()
 
